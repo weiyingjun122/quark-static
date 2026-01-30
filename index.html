@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>夸克网盘资源搜索</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center">
+
+<!-- LOGO -->
+<div class="mb-12 flex flex-col items-center">
+    <img src="static/logo.png" alt="Quark Logo" class="w-48 mb-6">
+    <h1 class="text-3xl font-bold text-gray-700">夸克网盘资源搜索</h1>
+</div>
+
+<!-- 搜索框 -->
+<div class="w-full max-w-xl mb-6">
+    <div class="flex">
+        <input id="searchInput" type="text" placeholder="输入关键词搜索"
+               class="flex-1 border border-gray-300 rounded-l-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
+        <button onclick="search()"
+                class="bg-blue-500 text-white px-6 py-3 rounded-r-full hover:bg-blue-600 transition">搜索</button>
+    </div>
+</div>
+
+<!-- 搜索结果 -->
+<div class="w-full max-w-xl">
+    <ul id="results" class="space-y-2"></ul>
+</div>
+
+<!-- 微信弹窗 -->
+<div id="wechatModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-lg p-6 shadow-lg w-80 text-center relative">
+        <h2 class="text-xl font-bold mb-4">资源未找到</h2>
+        <p class="text-gray-600 mb-4">加入微信群获取资源更新</p>
+        <img src="static/wechat_qrcode.png" alt="微信二维码" class="mx-auto mb-4 w-48">
+        <button onclick="closeModal()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">关闭</button>
+    </div>
+</div>
+
+<script>
+// 加载 JSON 数据
+let resources = [];
+fetch('data.json')
+  .then(res => res.json())
+  .then(data => resources = data);
+
+function search() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    const results = resources.filter(r => (r.title + r.keywords.join('')).toLowerCase().includes(q));
+
+    const ul = document.getElementById('results');
+    ul.innerHTML = '';
+
+    if (results.length === 0) {
+        showModal();
+        return;
+    }
+
+    results.forEach(r => {
+        const li = document.createElement('li');
+        li.className = "p-3 bg-white rounded shadow hover:bg-blue-50 transition cursor-pointer";
+        li.textContent = r.title;
+        li.onclick = () => openResult(r);
+        ul.appendChild(li);
+    });
+}
+
+function openResult(item) {
+    const ua = navigator.userAgent.toLowerCase();
+    const isMobile = /iphone|android|ipad/.test(ua);
+
+    if (isMobile) {
+        window.open(item.share_link, '_blank');
+    } else {
+        const url = `result.html?id=${item.id}`;
+        window.open(url, '_blank', 'width=360,height=420');
+    }
+}
+
+// 微信弹窗
+function showModal() {
+    document.getElementById('wechatModal').classList.remove('hidden');
+}
+function closeModal() {
+    document.getElementById('wechatModal').classList.add('hidden');
+}
+</script>
+
+</body>
+</html>

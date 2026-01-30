@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>资源详情</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex flex-col items-center justify-center min-h-screen p-4">
+
+<div id="container" class="bg-white p-6 rounded shadow-md w-full max-w-sm text-center">
+    <h1 id="title" class="text-2xl font-bold mb-4"></h1>
+    <p id="tip" class="text-gray-600 mb-4"></p>
+    <img id="qrcode" src="" class="mx-auto rounded border shadow" width="260">
+</div>
+
+<script>
+// 获取 URL 参数
+function getQueryParam(name) {
+    const url = new URL(window.location.href);
+    return url.searchParams.get(name);
+}
+
+let resources = [];
+fetch('data.json')
+  .then(res => res.json())
+  .then(data => {
+    resources = data;
+    init();
+});
+
+function init() {
+    const id = getQueryParam('id');
+    const item = resources.find(r => r.id === id);
+    if (!item) {
+        document.getElementById('container').innerHTML = '<p class="text-red-500">资源未找到</p>';
+        return;
+    }
+
+    const ua = navigator.userAgent.toLowerCase();
+    const isMobile = /iphone|android|ipad/.test(ua);
+
+    const titleEl = document.getElementById('title');
+    const tipEl = document.getElementById('tip');
+    const qrEl = document.getElementById('qrcode');
+
+    titleEl.textContent = item.title;
+
+    if (isMobile) {
+        window.location.href = item.share_link;
+    } else {
+        qrEl.src = item.qrcode;
+        tipEl.textContent = "请用手机扫描二维码打开夸克 App 并转存资源";
+    }
+}
+</script>
+
+</body>
+</html>
