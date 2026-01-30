@@ -4,7 +4,7 @@ import json
 import os
 
 # 文件路径
-xlsx_file = "../resources.xlsx"  # 根据你的目录调整
+xlsx_file = "resources.xlsx"  # 根据你的目录调整
 output_json = "../data.json"
 qrcode_dir = "../static/qrcode"
 
