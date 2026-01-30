@@ -1,44 +1,47 @@
 name: Auto Build & Deploy
 
-# 当 main 分支更新或 resources.xlsx 更新时触发
 on:
   push:
     branches:
       - main
     paths:
-      - 'resources.xlsx'  # 只监听资源表更新，也可以去掉 paths 监听全部
+      - 'resources.xlsx' # 只监听 resources.xlsx 更新，也可以去掉 paths 监听全部
 
 jobs:
-  build:
+  build-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. 检出代码
-      - name: Checkout Repo
-        uses: actions/checkout@v3
+    - name: Checkout Repo
+      uses: actions/checkout@v3
 
-      # 2. 安装 Python
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
 
-      # 3. 安装依赖
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install pandas qrcode openpyxl
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pandas qrcode openpyxl
 
-      # 4. 执行脚本生成二维码和 data.json
-      - name: Build Resources
-        run: |
-          python scripts/build_resources.py
+    - name: Build Resources
+      run: |
+        cd scripts
+        python build_resources.py
 
-      # 5. 提交更新
-      - name: Commit & Push changes
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add data.json static/qrcode/*
-          git commit -m "自动生成二维码 & 更新 data.json" || echo "No changes to commit"
-          git push origin main
+    - name: Commit & Push changes
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git add data.json static/qrcode/*
+        git commit -m "自动生成二维码 & 更新 data.json" || echo "No changes to commit"
+        git push
+
+    - name: Deploy to Cloudflare Pages
+      uses: cloudflare/pages-action@v1
+      with:
+        apiToken: ${{ secrets.CF_PAGES_API_TOKEN }}
+        accountId: ${{ secrets.CF_ACCOUNT_ID }}
+        projectName: 'quark-static'
+        directory: '.'  # 项目根目录

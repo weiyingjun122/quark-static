@@ -1,46 +1,41 @@
 import pandas as pd
 import qrcode
-import os
 import json
+import os
 
-# 获取脚本所在目录
-script_dir = os.path.dirname(os.path.abspath(__file__))
+# 文件路径
+xlsx_file = "resources.xlsx"  # 根据你的目录调整
+output_json = "../data.json"
+qrcode_dir = "../static/qrcode"
 
-# Excel 路径（同级）
-excel_path = os.path.join(script_dir, r"D:\Download\quark-static\resources.xlsx")
-
-# 输出二维码目录
-output_dir = os.path.join(script_dir, "..", "static", "qrcode")
-os.makedirs(output_dir, exist_ok=True)
-
-# 输出 JSON 文件
-json_path = os.path.join(script_dir, "..", "data.json")
+# 创建二维码目录
+os.makedirs(qrcode_dir, exist_ok=True)
 
 # 读取 Excel
-df = pd.read_excel(excel_path)
+df = pd.read_excel(xlsx_file)
 
-# 存放 JSON 数据
-index = []
+data = []
+for idx, row in df.iterrows():
+    item_id = str(row.get("id", idx+1))
+    title = str(row.get("title", ""))
+    keywords = str(row.get("keywords", "")).split(",")  # 假设关键词逗号分隔
+    share_link = str(row.get("share_link", ""))
 
-for _, r in df.iterrows():
     # 生成二维码
-    img = qrcode.make(r['share_link'])
-    save_path = os.path.join(output_dir, f"{r['id']}.png")
-    img.save(save_path)
-    print(f"生成二维码: {save_path}")
+    qr_path = os.path.join(qrcode_dir, f"{item_id}.png")
+    img = qrcode.make(share_link)
+    img.save(qr_path)
 
-    # 构建 JSON
-    index.append({
-        "id": str(r['id']),
-        "title": r['title'],
-        "keywords": [k.strip() for k in r['keywords'].split(",")],
-        "share_link": r['share_link'],
-        "qrcode": f"static/qrcode/{r['id']}.png"
+    data.append({
+        "id": item_id,
+        "title": title,
+        "keywords": keywords,
+        "share_link": share_link,
+        "qrcode": f"static/qrcode/{item_id}.png"
     })
 
 # 写入 JSON
-with open(json_path, "w", encoding="utf-8") as f:
-    json.dump(index, f, ensure_ascii=False, indent=2)
+with open(output_json, "w", encoding="utf-8") as f:
+    json.dump(data, f, ensure_ascii=False, indent=2)
 
-print(f"data.json 已生成: {json_path}")
-print("所有资源生成完成！")
+print("✅ data.json & QR codes 已生成")
