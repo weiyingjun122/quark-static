@@ -2,90 +2,341 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>夸克网盘资源搜索</title>
-<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+  background: #f7f8fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.container {
+  width: 100%;
+  max-width: 640px;
+  text-align: center;
+  padding: 0 20px;
+}
+
+/* logo */
+.logo-container {
+  margin-bottom: 40px;
+}
+
+.logo-container img {
+  width: 160px;
+  max-width: 80%;
+}
+
+.logo-container .title {
+  margin-top: 12px;
+  font-size: 36px;
+  font-weight: 600;
+  color: #1677ff;
+}
+
+/* 搜索框 */
+.search-box {
+  display: flex;
+  align-items: center;
+  border: 1px solid #dcdcdc;
+  border-radius: 50px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  height: 48px;
+}
+
+.search-box input {
+  flex: 1;
+  padding: 0 16px;
+  border: none;
+  outline: none;
+  font-size: 16px;
+  height: 100%;
+}
+
+.search-box button {
+  padding: 0 24px;
+  background: linear-gradient(90deg,#4c9aff,#1677ff);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  height: 100%;
+  transition: all 0.3s;
+  border-left: 1px solid rgba(255,255,255,0.3);
+}
+
+.search-box button:hover {
+  background: linear-gradient(90deg,#1677ff,#0056d4);
+}
+
+/* 搜索结果列表 */
+ul#result {
+  margin-top: 20px;
+  padding: 0;
+  list-style: none;
+  text-align: left;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+ul#result li {
+  padding: 12px 16px;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+}
+
+ul#result li:hover {
+  background: #f0f5ff;
+}
+
+.empty {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #999;
+}
+
+/* 弹窗 */
+#modal {
+  display: none; /* 修复遮罩问题：初始隐藏 */
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.55);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-card {
+  background: #fff;
+  width: 100%;
+  max-width: 360px;
+  padding: 28px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.12);
+  text-align: center;
+  position: relative;
+}
+
+/* 手机端按钮 */
+.btn {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 12px 22px;
+  background: linear-gradient(90deg,#4c9aff,#1677ff);
+  color: #fff;
+  border-radius: 999px;
+  text-decoration: none;
+  font-size: 16px;
+  box-shadow: 0 4px 12px rgba(0,103,255,0.3);
+  transition: all 0.3s;
+}
+
+.btn:hover {
+  background: linear-gradient(90deg,#1677ff,#0056d4);
+  box-shadow: 0 6px 16px rgba(0,103,255,0.4);
+}
+
+/* 二维码 */
+img.qr {
+  width: 220px;
+  height: 220px;
+  margin-top: 12px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.1);
+}
+
+.tip {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #666;
+}
+
+.countdown {
+  margin-top: 12px;
+  font-size: 13px;
+  color: #999;
+}
+
+.copy-btn {
+  display: block;
+  margin: 12px auto 0;
+  font-size: 14px;
+  background: #eee;
+  color: #333;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+}
+.copy-btn:hover {
+  background: #ddd;
+}
+</style>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-center">
+<body>
 
-<!-- LOGO -->
-<div class="mb-12 flex flex-col items-center">
-    <img src="static/logo.png" alt="Quark Logo" class="w-48 mb-6">
-    <h1 class="text-3xl font-bold text-gray-700">夸克网盘资源搜索</h1>
+<div class="container">
+
+  <!-- logo -->
+  <div class="logo-container">
+    <img src="static/logo.png" alt="logo">
+    <div class="title">夸克网盘资源搜索</div>
+  </div>
+
+  <!-- 搜索框 -->
+  <div class="search-box">
+    <input id="kw" placeholder="输入关键词搜索资源…" />
+    <button onclick="search()">搜索</button>
+  </div>
+
+  <ul id="result"></ul>
+  <div id="empty" class="empty" style="display:none;">未找到相关资源</div>
+
 </div>
 
-<!-- 搜索框 -->
-<div class="w-full max-w-xl mb-6">
-    <div class="flex">
-        <input id="searchInput" type="text" placeholder="输入关键词搜索"
-               class="flex-1 border border-gray-300 rounded-l-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500">
-        <button onclick="search()"
-                class="bg-blue-500 text-white px-6 py-3 rounded-r-full hover:bg-blue-600 transition">搜索</button>
+<!-- 弹窗 -->
+<div id="modal">
+  <div class="modal-card">
+    <!-- 手机端 -->
+    <div id="mobile" style="display:none;">
+      <h2>即将跳转资源</h2>
+      <a id="mobile-link" class="btn" target="_blank">立即打开夸克网盘</a>
+      <div class="countdown">
+        <span id="sec">3</span> 秒后自动跳转
+      </div>
+      <p class="tip">建议在夸克网盘 App 内打开</p>
     </div>
-</div>
 
-<!-- 搜索结果 -->
-<div class="w-full max-w-xl">
-    <ul id="results" class="space-y-2"></ul>
-</div>
-
-<!-- 微信弹窗 -->
-<div id="wechatModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
-    <div class="bg-white rounded-lg p-6 shadow-lg w-80 text-center relative">
-        <h2 class="text-xl font-bold mb-4">资源未找到</h2>
-        <p class="text-gray-600 mb-4">加入微信群获取资源更新</p>
-        <img src="static/wechat_qrcode.png" alt="微信二维码" class="mx-auto mb-4 w-48">
-        <button onclick="closeModal()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">关闭</button>
+    <!-- PC端 -->
+    <div id="pc" style="display:none;">
+      <h2>请使用手机扫码</h2>
+      <img id="qr-img" class="qr" />
+      <p class="tip">使用夸克网盘 App 扫码访问</p>
+      <a id="copy-link" class="copy-btn">复制链接</a>
     </div>
+
+    <!-- 未命中 -->
+    <div id="wechat" style="display:none;">
+      <h2>资源未找到</h2>
+      <iframe src="wechat.html" style="width:100%;height:280px;border:none;margin-top:12px;"></iframe>
+    </div>
+  </div>
 </div>
 
 <script>
-// 加载 JSON 数据
-let resources = [];
-fetch('data.json')
-  .then(res => res.json())
-  .then(data => resources = data);
+let DATA = [];
+
+// 加载数据
+fetch("data.json")
+  .then(r => r.json())
+  .then(d => DATA = d);
 
 function search() {
-    const q = document.getElementById('searchInput').value.toLowerCase();
-    const results = resources.filter(r => (r.title + r.keywords.join('')).toLowerCase().includes(q));
+  const kw = document.getElementById("kw").value.trim().toLowerCase();
+  const ul = document.getElementById("result");
+  const empty = document.getElementById("empty");
 
-    const ul = document.getElementById('results');
-    ul.innerHTML = '';
+  ul.innerHTML = "";
+  empty.style.display = "none";
 
-    if (results.length === 0) {
-        showModal();
-        return;
-    }
+  if (!kw) return;
 
-    results.forEach(r => {
-        const li = document.createElement('li');
-        li.className = "p-3 bg-white rounded shadow hover:bg-blue-50 transition cursor-pointer";
-        li.textContent = r.title;
-        li.onclick = () => openResult(r);
-        ul.appendChild(li);
-    });
+  const list = DATA.filter(i => i.name.toLowerCase().includes(kw));
+
+  if (!list.length) {
+    // 弹出 wechat.html
+    showModal("wechat");
+    return;
+  }
+
+  list.forEach(item => {
+    const li = document.createElement("li");
+    li.textContent = item.name;
+    li.onclick = () => openResult(item);
+    ul.appendChild(li);
+  });
 }
 
+// 打开结果
 function openResult(item) {
-    const ua = navigator.userAgent.toLowerCase();
-    const isMobile = /iphone|android|ipad/.test(ua);
-
-    if (isMobile) {
-        window.open(item.share_link, '_blank');
-    } else {
-        const url = `result.html?id=${item.id}`;
-        window.open(url, '_blank', 'width=360,height=420');
-    }
+  if (isMobile()) {
+    showModal("mobile", item);
+  } else {
+    showModal("pc", item);
+  }
 }
 
-// 微信弹窗
-function showModal() {
-    document.getElementById('wechatModal').classList.remove('hidden');
+// 显示 modal
+function showModal(type, item) {
+  const modal = document.getElementById("modal");
+  modal.style.display = "flex";
+
+  document.getElementById("mobile").style.display = "none";
+  document.getElementById("pc").style.display = "none";
+  document.getElementById("wechat").style.display = "none";
+
+  if (type === "mobile") {
+    const mobile = document.getElementById("mobile");
+    mobile.style.display = "block";
+    const link = document.getElementById("mobile-link");
+    link.href = item.url;
+
+    let sec = 3;
+    const el = document.getElementById("sec");
+    el.textContent = sec;
+    const timer = setInterval(() => {
+      sec--;
+      el.textContent = sec;
+      if (sec <= 0) {
+        clearInterval(timer);
+        location.href = item.url;
+      }
+    }, 1000);
+
+  } else if (type === "pc") {
+    const pc = document.getElementById("pc");
+    pc.style.display = "block";
+    document.getElementById("qr-img").src = `/static/qrcode/${item.id}.png`;
+
+    const copyBtn = document.getElementById("copy-link");
+    copyBtn.onclick = () => {
+      navigator.clipboard.writeText(item.url).then(()=>{
+        copyBtn.textContent = "已复制";
+        setTimeout(()=>copyBtn.textContent="复制链接",1500);
+      });
+    };
+
+  } else if (type === "wechat") {
+    document.getElementById("wechat").style.display = "block";
+  }
 }
-function closeModal() {
-    document.getElementById('wechatModal').classList.add('hidden');
+
+// 点击遮罩关闭
+document.getElementById("modal").onclick = function(e){
+  if(e.target.id==="modal"){
+    this.style.display="none";
+  }
 }
+
+// 判断移动端
+function isMobile(){
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+}
+
+// 回车搜索
+document.getElementById("kw").addEventListener("keydown", e => {
+  if(e.key==="Enter") search();
+});
 </script>
 
 </body>
