@@ -5,39 +5,47 @@ on:
     branches:
       - main
     paths:
-      - 'resources.xlsx' # 只监听 resources.xlsx 更新，也可以去掉 paths 监听全部
+      - 'resources.xlsx' # 监听 resources.xlsx 更新，可去掉 paths 监听全部
 
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
 
     steps:
+    # 1. 拉取仓库
     - name: Checkout Repo
       uses: actions/checkout@v3
 
+    # 2. 设置 Python
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.11'
 
+    # 3. 安装依赖
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install pandas qrcode openpyxl Pillow
 
+    # 4. 执行 build_resources.py
     - name: Build Resources
       run: |
         cd scripts
         python build_resources.py
 
+    # 5. 提交 & 推送更新
     - name: Commit & Push changes
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         git config --global user.name "github-actions[bot]"
         git config --global user.email "github-actions[bot]@users.noreply.github.com"
         git add data.json static/qrcode/*
         git commit -m "自动生成二维码 & 更新 data.json" || echo "No changes to commit"
-        git push
+        git push https://x-access-token:$GITHUB_TOKEN@github.com/weiyingjun122/quark-static.git main
 
+    # 6. 部署到 Cloudflare Pages
     - name: Deploy to Cloudflare Pages
       uses: cloudflare/pages-action@v1
       with:
