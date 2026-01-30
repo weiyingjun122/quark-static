@@ -7,18 +7,21 @@
 <style>
 body { font-family: Arial, sans-serif; background: #f5f5f5; text-align: center; margin: 0; padding: 0; }
 .logo { margin-top: 50px; }
-.logo img { width: 200px; }
+.logo img { width: 180px; }
 .logo h1 { margin: 20px 0 40px; font-size: 28px; color: #333; }
 .search-box { display: flex; justify-content: center; margin-bottom: 30px; }
 .search-box input { padding: 10px; width: 300px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px 0 0 4px; outline: none; }
-.search-box button { padding: 10px 20px; font-size: 16px; border: none; background: #0078ff; color: #fff; border-radius: 0 4px 4px 0; cursor: pointer; }
+.search-box button { padding: 10px 20px; font-size: 16px; border: none; background: #0078ff; color: #fff; border-radius: 0 4px 4px 0; cursor: pointer; transition: 0.3s; }
 .search-box button:hover { background: #005bbb; }
-.modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background: rgba(0,0,0,0.5); }
-.modal-content { background: #fff; margin: 15% auto; padding: 20px; border-radius: 8px; width: 80%; max-width: 400px; text-align: center; position: relative; }
-.modal-content h3 { margin-top: 0; }
-.modal-content img { margin-top: 10px; border: 1px solid #ccc; border-radius: 4px; }
-.modal-content .btn { display: inline-block; margin-top: 10px; padding: 10px 20px; background: #0078ff; color: #fff; text-decoration: none; border-radius: 4px; }
-.close { position: absolute; top: 10px; right: 15px; font-size: 20px; cursor: pointer; }
+.modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background: rgba(0,0,0,0.6); }
+.modal-content { background: #fff; margin: 15% auto; padding: 20px; border-radius: 10px; width: 90%; max-width: 400px; text-align: center; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+.modal-content h3 { margin-top: 0; color: #333; }
+.modal-content p { margin: 10px 0; color: #555; }
+.modal-content img { margin-top: 15px; border: 1px solid #ccc; border-radius: 6px; }
+.modal-content .btn { display: inline-block; margin-top: 15px; padding: 10px 20px; background: #0078ff; color: #fff; text-decoration: none; border-radius: 6px; transition: 0.3s; }
+.modal-content .btn:hover { background: #005bbb; }
+.close { position: absolute; top: 10px; right: 15px; font-size: 22px; font-weight: bold; color: #999; cursor: pointer; transition: 0.3s; }
+.close:hover { color: #333; }
 </style>
 </head>
 <body>
@@ -46,7 +49,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let data = [];
     const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
 
-    // 加载 data.json
+    // 动态加载 data.json
     fetch("data.json")
         .then(res => res.json())
         .then(json => data = json)
@@ -62,6 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const keyword = searchInput.value.trim().toLowerCase();
         if (!keyword) return;
 
+        // 查询单条资源
         const item = data.find(d =>
             d.title.toLowerCase().includes(keyword) ||
             (d.keywords && d.keywords.some(k => k.toLowerCase().includes(keyword)))
@@ -70,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
         let html = '';
         if (item) {
             html += `<h3>${item.title}</h3>`;
-            html += `<p>请使用夸克或微信扫描下方二维码访问资源</p>`;
+            html += `<p>请使用夸克或微信访问资源</p>`;
             if (isMobile) {
                 html += `<a href="${item.share_link}" target="_blank" class="btn">点击前往</a>`;
             } else {
