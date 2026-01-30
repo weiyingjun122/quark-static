@@ -5,109 +5,184 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>夸克网盘资源搜索</title>
 <style>
-body { font-family: Arial, sans-serif; background: #f5f5f5; text-align: center; margin: 0; padding: 0; }
-.logo { margin-top: 50px; }
-.logo img { width: 180px; }
-.logo h1 { margin: 20px 0 40px; font-size: 28px; color: #333; }
-.search-box { display: flex; justify-content: center; margin-bottom: 30px; }
-.search-box input { padding: 10px; width: 300px; font-size: 16px; border: 1px solid #ccc; border-radius: 4px 0 0 4px; outline: none; }
-.search-box button { padding: 10px 20px; font-size: 16px; border: none; background: #0078ff; color: #fff; border-radius: 0 4px 4px 0; cursor: pointer; transition: 0.3s; }
-.search-box button:hover { background: #005bbb; }
-.highlight { background: yellow; }
-.modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background: rgba(0,0,0,0.6); }
-.modal-content { background: #fff; margin: 15% auto; padding: 20px; border-radius: 10px; width: 90%; max-width: 400px; text-align: center; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-.modal-content h3 { margin-top: 0; color: #333; }
-.modal-content p { margin: 10px 0; color: #555; }
-.modal-content img { margin-top: 15px; border: 1px solid #ccc; border-radius: 6px; }
-.modal-content .btn { display: inline-block; margin-top: 15px; padding: 10px 20px; background: #0078ff; color: #fff; text-decoration: none; border-radius: 6px; transition: 0.3s; }
-.modal-content .btn:hover { background: #005bbb; }
-.close { position: absolute; top: 10px; right: 15px; font-size: 22px; font-weight: bold; color: #999; cursor: pointer; transition: 0.3s; }
-.close:hover { color: #333; }
-.tooltip { font-size: 12px; color: #555; margin-top: 8px; }
+    body {
+        font-family: Arial, sans-serif;
+        background: #f5f5f5;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 100px;
+    }
+    .logo {
+        text-align: center;
+        margin-bottom: 50px;
+    }
+    .logo img {
+        width: 150px;
+        display: block;
+        margin: 0 auto;
+    }
+    .logo h1 {
+        margin-top: 10px;
+        font-size: 28px;
+        color: #333;
+    }
+    .search-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+    .search-container input[type="text"] {
+        width: 300px;
+        padding: 10px;
+        font-size: 16px;
+        border-radius: 5px 0 0 5px;
+        border: 1px solid #ccc;
+        outline: none;
+    }
+    .search-container button {
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 0 5px 5px 0;
+        border: 1px solid #1e90ff;
+        background-color: #1e90ff;
+        color: white;
+        cursor: pointer;
+    }
+    .search-container button:hover {
+        background-color: #0f78d1;
+    }
+    .highlight {
+        color: #e74c3c;
+        font-weight: bold;
+    }
+    /* 模态框 */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 9999;
+        left: 0; top: 0;
+        width: 100%; height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        justify-content: center;
+        align-items: center;
+    }
+    .modal-content {
+        background-color: #fff;
+        padding: 30px;
+        border-radius: 10px;
+        text-align: center;
+        max-width: 90%;
+        box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+    }
+    .modal-content img {
+        margin-top: 20px;
+    }
+    .btn {
+        display: inline-block;
+        margin-top: 15px;
+        padding: 10px 20px;
+        font-size: 16px;
+        background-color: #1e90ff;
+        color: #fff;
+        text-decoration: none;
+        border-radius: 5px;
+    }
+    .btn:hover {
+        background-color: #0f78d1;
+    }
 </style>
 </head>
 <body>
 
 <div class="logo">
-    <img src="static/logo.png" alt="夸克网盘">
+    <img src="static/logo.png" alt="Logo">
     <h1>夸克网盘资源搜索</h1>
 </div>
 
-<div class="search-box">
+<div class="search-container">
     <input type="text" id="searchInput" placeholder="请输入资源关键词">
     <button id="searchBtn">搜索</button>
 </div>
 
 <!-- 弹窗 -->
 <div id="modal" class="modal">
-    <div class="modal-content">
-        <span id="closeModal" class="close">&times;</span>
-        <div id="modalBody"></div>
-    </div>
+    <div class="modal-content" id="modalBody"></div>
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
-    let data = [];
+const modal = document.getElementById('modal');
+const modalBody = document.getElementById('modalBody');
+const searchBtn = document.getElementById('searchBtn');
+const searchInput = document.getElementById('searchInput');
+
+// 关闭弹窗
+modal.addEventListener('click', (e) => {
+    if(e.target === modal) {
+        modal.style.display = 'none';
+    }
+});
+
+// 加载 data.json
+async function loadData() {
+    try {
+        const res = await fetch(`data.json?t=${Date.now()}`);
+        const data = await res.json();
+        return data;
+    } catch (err) {
+        console.error("加载资源失败:", err);
+        return [];
+    }
+}
+
+// 高亮匹配关键词
+function highlight(text, keyword) {
+    if(!keyword) return text;
+    const reg = new RegExp(`(${keyword})`, 'gi');
+    return text.replace(reg, '<span class="highlight">$1</span>');
+}
+
+// 搜索功能
+async function search() {
+    const keyword = searchInput.value.trim().toLowerCase();
+    if(!keyword) return;
+
+    const data = await loadData();
+
+    // 找到第一个匹配的资源
+    const item = data.find(d =>
+        d.title.toLowerCase().includes(keyword) ||
+        d.keywords.some(k => k.toLowerCase().includes(keyword))
+    );
+
     const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
+    let html = '';
 
-    // 动态加载 data.json
-    fetch("data.json")
-        .then(res => res.json())
-        .then(json => data = json)
-        .catch(err => console.error("加载 data.json 失败:", err));
-
-    const searchBtn = document.getElementById("searchBtn");
-    const searchInput = document.getElementById("searchInput");
-    const modal = document.getElementById("modal");
-    const modalBody = document.getElementById("modalBody");
-    const closeModal = document.getElementById("closeModal");
-
-    function highlight(text, keyword) {
-        if (!keyword) return text;
-        const regex = new RegExp(`(${keyword})`, 'ig');
-        return text.replace(regex, '<span class="highlight">$1</span>');
-    }
-
-    function search() {
-        const keyword = searchInput.value.trim().toLowerCase();
-
-        // 禁止空搜索
-        if (!keyword) return;
-
-        // 清空上一次结果
-        modalBody.innerHTML = '';
-
-        const item = data.find(d =>
-            d.title.toLowerCase().includes(keyword) ||
-            (d.keywords && d.keywords.some(k => k.toLowerCase().includes(keyword)))
-        );
-
-        let html = '';
-        if (item) {
-            html += `<h3>${highlight(item.title, keyword)}</h3>`;
-            if (isMobile) {
-                html += `<a href="${item.share_link}" target="_blank" class="btn">点击前往</a>`;
-                html += `<div class="tooltip">请使用夸克或微信访问资源</div>`;
-            } else {
-                html += `<img src="${item.qrcode}" alt="二维码" style="width:200px;height:200px;">`;
-                html += `<div class="tooltip">请使用夸克或微信扫描二维码访问资源</div>`;
-            }
+    if(item) {
+        html += `<h3>${highlight(item.title, keyword)}</h3>`;
+        if(isMobile) {
+            html += `<p>点击下方按钮访问资源</p>`;
+            html += `<a href="${item.share_link}" target="_blank" class="btn">点击前往</a>`;
         } else {
-            html += `<p>未找到资源</p>
-                     <p>请扫码加群获取更多资源</p>
-                     <img src="static/wechat_qrcode.png" alt="加群二维码" style="width:250px;height:250px;">`;
+            html += `<p>请使用夸克或微信扫描下方二维码访问资源</p>`;
+            html += `<img src="${item.qrcode}" alt="二维码" style="width:200px;height:200px;">`;
         }
-
-        modalBody.innerHTML = html;
-        modal.style.display = "block";
+    } else {
+        html += `<h3>未找到资源</h3>`;
+        html += `<p>请扫码加入资源群获取更多资源</p>`;
+        html += `<img src="static/wechat_qrcode.png" alt="加群二维码" style="width:350px;height:350px;">`;
     }
 
-    searchBtn.addEventListener("click", search);
-    searchInput.addEventListener("keypress", e => { if (e.key === 'Enter') search(); });
+    modalBody.innerHTML = html;
+    modal.style.display = 'flex';
+}
 
-    closeModal.addEventListener("click", () => modal.style.display = "none");
-    window.addEventListener("click", e => { if (e.target === modal) modal.style.display = "none"; });
+// 绑定搜索按钮
+searchBtn.addEventListener('click', search);
+
+// 支持回车键搜索
+searchInput.addEventListener('keypress', (e) => {
+    if(e.key === 'Enter') search();
 });
 </script>
 
