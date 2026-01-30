@@ -69,51 +69,48 @@
 
 <script>
 async function search() {
-    const input = document.getElementById('searchInput').value.trim().toLowerCase();
-    const modal = document.getElementById('modal');
-    const modalBody = document.getElementById('modalBody');
-    modalBody.innerHTML = ''; // 清空内容
+    const keywordInput = document.getElementById("keyword");
+    if (!keywordInput) return;
 
-    if (!input) return;
+    const keyword = keywordInput.value.trim().toLowerCase();
+    if (!keyword) return;
 
-    try {
-        const response = await fetch('data.json');
-        const data = await response.json();
+    const modal = document.getElementById("modal");
+    const modalBody = document.getElementById("modal-body");
+    const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
 
-        // 找到第一个匹配的资源
-        const item = data.find(d =>
-            d.title.toLowerCase().includes(input) ||
-            (d.keywords && d.keywords.some(k => k.toLowerCase().includes(input)))
-        );
+    // 找到第一条匹配资源，增加安全检查
+    const item = data.find(d => {
+        const title = (d.title || "").toLowerCase();
+        const keywords = Array.isArray(d.keywords) ? d.keywords.map(k => (k||"").toLowerCase()) : [];
+        return title.includes(keyword) || keywords.some(k => k.includes(keyword));
+    });
 
-        const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
-        let html = '';
+    let html = '';
 
-        if (item) {
-            html += `<h3>${item.title}</h3>`;
-            html += `<p>请使用夸克或微信扫描下方二维码访问资源</p>`;
-            if (isMobile) {
-                html += `<a href="${item.share_link}" target="_blank" class="btn">打开链接</a>`;
-            } else {
-                html += `<img src="${item.qrcode}" alt="二维码" style="width:200px;height:200px;">`;
-            }
+    if (item) {
+        html += `<h3>${item.title}</h3>`;
+        html += `<p>请使用下方方式访问资源：</p>`;
+        if (isMobile) {
+            html += `<a href="${item.share_link}" target="_blank" class="btn">点击前往</a>`;
         } else {
-            html += `<p>    未找到资源      </p>
-                     <p>请扫码加群获取更多资源</p>`;
-            html += `<img src="static/wechat_qrcode.png" alt="加群二维码" style="width:350px;height:350px;">`;
+            html += `<img src="${item.qrcode}" alt="二维码" style="width:200px;height:200px;">`;
         }
+    } else {
+        html += `<p>未找到资源</p>
+                 <p>请扫码加群获取更多资源</p>`;
+        html += `<img src="static/wechat_qrcode.png" alt="加群二维码" style="width:350px;height:350px;">`;
+    }
 
+    if (modalBody && modal) {
         modalBody.innerHTML = html;
         modal.style.display = "block"; // 弹窗显示
-    } catch (err) {
-        console.error('加载资源失败', err);
-        modalBody.innerHTML = `<p>加载资源失败，请稍后重试</p>`;
-        modal.style.display = "block";
     }
 }
 
 // 搜索按钮绑定
-document.getElementById('searchBtn').onclick = search;
+//document.getElementById('searchBtn').onclick = search;
+document.getElementById("searchBtn").addEventListener("click", search);
 
 // 回车搜索
 document.getElementById('searchInput').addEventListener('keypress', function(e){
@@ -121,9 +118,9 @@ document.getElementById('searchInput').addEventListener('keypress', function(e){
 });
 
 // 关闭弹窗
-document.querySelector('.close').onclick = function() {
-    document.getElementById('modal').style.display = 'none';
-}
+document.getElementById("modal-close").addEventListener("click", () => {
+    document.getElementById("modal").style.display = "none";
+});
 
 // 点击弹窗外区域关闭
 window.onclick = function(event) {
