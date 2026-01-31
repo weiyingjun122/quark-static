@@ -131,8 +131,28 @@ async function search() {
     }
     modalBody.innerHTML=html;
     modal.style.display='flex';
+    // 🔹 记录搜索关键词
     Stats.recordKeyword(keyword,!!item);
-    renderRecommend(); // 🔥 搜索后刷新推荐区
+    // ⭐ 新增：同步到后端 stats.json（SEO构建用）
+    syncStatsToFile();
+    // 🔥 搜索后刷新首页推荐热搜
+    renderRecommend();
+}
+
+// ⭐ 新增函数：同步统计到后端
+async function syncStatsToFile() {
+    try {
+        await fetch('/stats-update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                page_pv: Stats.get('page_pv', 0),
+                search_keywords: Stats.get('search_keywords', {})
+            })
+        });
+    } catch(e) {
+        console.warn('syncStatsToFile failed', e);
+    }
 }
 
 searchBtn.addEventListener('click', search);
