@@ -25,6 +25,16 @@ jobs:
         with:
           python-version: '3.11'
 
+      # 【新增步骤】从 Cloudflare Worker 同步最新统计数据
+      - name: Sync Stats from Worker
+        run: |
+          # 替换成你的 Worker 地址，注意 key=123456 要和 Worker 代码里设的一样
+          curl -s "https://quark-search-api.weiyingjun122.workers.dev/sync?key=my_secret_sync_key" > static/stats.json
+
+          # 打印一下看看有没有成功拿到数据
+          echo "Downloaded stats.json:"
+          cat static/stats.json
+
       # 3️⃣ 安装依赖
       - name: Install dependencies
         run: |
