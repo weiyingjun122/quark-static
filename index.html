@@ -115,34 +115,30 @@ async function search() {
     const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
     let html = '';
 
+    // 🔹 不分平台，先统计
+    Stats.recordKeyword(keyword, !!item);
+    syncStatsToFile();
+
     if (item) {
         html = `<h3>${highlight(item.title, keyword)}</h3>`;
         if (isMobile) {
             html += `<p>点击下方按钮访问资源</p>
-                     <button class="btn" onclick="recordAndGo('${item.share_link}','${keyword}',true)">点击前往</button>`;
+                     <a href="${item.share_link}" target="_blank" class="btn">点击前往</a>`;
         } else {
             html += `<p>请使用夸克或微信扫描下方二维码访问资源</p>
                      <img src="${item.qrcode}" style="width:200px;height:200px;">`;
-            // 🔹 桌面端统计
-            Stats.recordKeyword(keyword, true);
-            syncStatsToFile();
         }
     } else {
         html = `<h3>未找到资源</h3>
                 <p>请扫码加入资源群获取更多资源</p>
                 <img src="static/wechat_qrcode.png" style="width:350px;height:350px;">`;
-        if (!isMobile) {
-            Stats.recordKeyword(keyword, false);
-            syncStatsToFile();
-        }
     }
 
     modalBody.innerHTML = html;
     modal.style.display = 'flex';
-
-    // 🔥 刷新推荐热搜
     renderRecommend();
 }
+
 
 // ⭐ 移动端点击统计并跳转
 function recordAndGo(url, keyword, found){
