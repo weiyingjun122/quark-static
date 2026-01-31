@@ -3,9 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>夸克网盘资源搜索</title>
+<title>夸克网盘资源搜索 - 免费高速下载</title>
+<meta name="description" content="全网夸克网盘资源搜索，支持电脑/手机端，每日更新热搜榜，电影电视剧学习资料免费下。">
 <style>
-body { font-family: Arial, sans-serif; background: #f5f5f5; display: flex; flex-direction: column; align-items: center; padding-top: 50px; margin:0; }
+body { font-family: "Microsoft YaHei", Arial, sans-serif; background: #f5f5f5; display: flex; flex-direction: column; align-items: center; padding-top: 50px; margin:0; }
 
 /* logo */
 .logo { text-align: center; margin-bottom: 40px; flex-shrink: 0; }
@@ -14,28 +15,26 @@ body { font-family: Arial, sans-serif; background: #f5f5f5; display: flex; flex-
 
 /* 搜索框 */
 .search-container { display: flex; justify-content: center; margin-bottom: 20px; flex-wrap: nowrap; width: 90%; max-width: 480px; }
-.search-container input[type="text"] { flex: 1; padding: 10px; font-size: 16px; border-radius: 5px 0 0 5px; border: 1px solid #ccc; outline: none; }
-.search-container button { padding: 10px 20px; font-size: 16px; border-radius: 0 5px 5px 0; border: 1px solid #1e90ff; background-color: #1e90ff; color: white; cursor: pointer; }
+.search-container input[type="text"] { flex: 1; padding: 12px; font-size: 16px; border-radius: 5px 0 0 5px; border: 1px solid #ccc; outline: none; }
+.search-container button { padding: 12px 24px; font-size: 16px; border-radius: 0 5px 5px 0; border: none; background-color: #1e90ff; color: white; cursor: pointer; transition: background 0.3s; }
 .search-container button:hover { background-color: #0f78d1; }
 
 .highlight { color: #e74c3c; font-weight: bold; }
 
 /* 推荐区 */
 #recommend { width: 100%; max-width: 480px; margin-bottom: 20px; }
-.recommend-card { display: flex; flex-wrap: wrap; gap: 10px; background:#fff; padding:15px; border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,.1); }
-.recommend-card h3 { width:100%; margin-bottom:10px; }
-.hot-keyword { flex: 1 1 auto; padding: 8px 14px; background: #f0f6ff; border-radius: 25px; text-align: center; cursor: pointer; transition: all 0.2s; }
-.hot-keyword:hover { background:#d0e4ff; transform: scale(1.05); }
-
-/* 热门程度字体大小和颜色 */
-.hot-keyword[data-count] { font-weight: 500; color: #1e90ff; }
-.hot-keyword[data-count]:nth-child(n) { font-size: calc(14px + attr(data-count number) * 1px); }
+.recommend-card { display: flex; flex-wrap: wrap; gap: 10px; background:#fff; padding:20px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.08); }
+.recommend-card h3 { width:100%; margin-top:0; margin-bottom:15px; font-size: 16px; color: #666; border-bottom: 1px solid #eee; padding-bottom: 10px;}
+.hot-keyword { padding: 6px 12px; background: #f0f6ff; border-radius: 20px; text-align: center; cursor: pointer; transition: all 0.2s; color: #1e90ff; font-size: 14px; }
+.hot-keyword:hover { background:#1e90ff; color: #fff; transform: translateY(-2px); }
+.hot-fire { color: #ff4500; background: #fff0f0; font-weight: bold; } /* 爆款样式 */
 
 /* 模态框 */
 .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
-.modal-content { background-color: #fff; padding: 30px; border-radius: 10px; text-align: center; max-width: 90%; box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
-.modal-content img { margin-top: 20px; }
-.btn { display: inline-block; margin-top: 15px; padding: 10px 20px; font-size: 16px; background-color: #1e90ff; color: #fff; text-decoration: none; border-radius: 5px; cursor:pointer; }
+.modal-content { background-color: #fff; padding: 30px; border-radius: 12px; text-align: center; max-width: 90%; width: 400px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); position: relative; }
+.close-btn { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; color: #999; }
+.modal-content img { margin-top: 15px; max-width: 100%; }
+.btn { display: inline-block; margin-top: 20px; padding: 12px 35px; font-size: 16px; background-color: #1e90ff; color: #fff; text-decoration: none; border-radius: 25px; cursor:pointer; font-weight: bold; }
 .btn:hover { background-color: #0f78d1; }
 
 /* 响应式 */
@@ -50,154 +49,176 @@ body { font-family: Arial, sans-serif; background: #f5f5f5; display: flex; flex-
 
 <!-- logo -->
 <div class="logo">
-    <img src="static/logo.png" alt="Logo">
+    <img src="static/logo.png" alt="夸克搜索" onerror="this.style.display='none'">
     <h1>夸克网盘资源搜索</h1>
 </div>
 
 <!-- 搜索框 -->
 <div class="search-container">
-    <input type="text" id="searchInput" placeholder="请输入资源关键词">
+    <input type="text" id="searchInput" placeholder="请输入电影、电视剧、资料...">
     <button id="searchBtn">搜索</button>
 </div>
 
 <!-- 首页推荐热搜 -->
-<div id="recommend"></div>
+<div id="recommend">
+    <!-- 默认加载态，JS加载完成后会覆盖这里 -->
+    <div class="recommend-card">
+        <h3>🔥 正在加载实时热搜...</h3>
+    </div>
+</div>
 
 <!-- 弹窗 -->
 <div id="modal" class="modal">
-    <div class="modal-content" id="modalBody"></div>
+    <div class="modal-content">
+        <span class="close-btn" onclick="document.getElementById('modal').style.display='none'">&times;</span>
+        <div id="modalBody"></div>
+    </div>
 </div>
 
 <script>
-/* ========= 统计模块 ========= */
-const Stats = {
-    get(key, def) { try { return JSON.parse(localStorage.getItem(key)) ?? def } catch { return def } },
-    set(key, val) { localStorage.setItem(key, JSON.stringify(val)) },
-    pageView() { const pv=this.get('page_pv',0); this.set('page_pv',pv+1) },
-    recordKeyword(keyword, found) {
-        const map=this.get('search_keywords',{});
-        if(!map[keyword]) map[keyword]={count:0,found:0};
-        map[keyword].count++;
-        if(found) map[keyword].found++;
-        this.set('search_keywords',map);
-    },
-    hotList(limit=10){
-        const map=this.get('search_keywords',{});
-        return Object.entries(map).sort((a,b)=>b[1].count-a[1].count).slice(0,limit);
+// ============================================================
+// ⚠️⚠️⚠️ 请将下方地址替换为您在 Cloudflare 部署的 Worker 地址
+// 例如: https://quark-search-api.zhangsan.workers.dev
+// ============================================================
+const WORKER_URL = 'https://quark-search-api.weiyingjun122.workers.dev';
+
+// DOM 元素
+const modal = document.getElementById('modal');
+const modalBody = document.getElementById('modalBody');
+const searchBtn = document.getElementById('searchBtn');
+const searchInput = document.getElementById('searchInput');
+
+// 关闭弹窗逻辑
+modal.addEventListener('click', e => { if(e.target === modal) modal.style.display='none' });
+
+// 加载本地资源数据 (data.json 由 Python 脚本生成)
+let localData = [];
+async function loadData() {
+    try {
+        const res = await fetch(`data.json?t=${Date.now()}`);
+        localData = await res.json();
+    } catch {
+        console.error("本地数据加载失败");
+        localData = [];
     }
 }
-Stats.pageView();
 
-/* ========= 搜索逻辑 ========= */
-const modal=document.getElementById('modal');
-const modalBody=document.getElementById('modalBody');
-const searchBtn=document.getElementById('searchBtn');
-const searchInput=document.getElementById('searchInput');
-
-modal.addEventListener('click', e=>{ if(e.target===modal) modal.style.display='none' });
-
-async function loadData() {
-    try { const res=await fetch(`data.json?t=${Date.now()}`); return await res.json(); }
-    catch { return []; }
-}
-
+// 高亮关键词
 function highlight(text, keyword) {
     if(!keyword) return text;
     const reg = new RegExp(`(${keyword})`,'gi');
     return text.replace(reg,'<span class="highlight">$1</span>');
 }
 
-async function search() {
-    const keyword = searchInput.value.trim().toLowerCase();
+// 核心搜索功能
+async function performSearch(keyword) {
     if (!keyword) return;
-    const data = await loadData();
-    const item = data.find(d => d.title.toLowerCase().includes(keyword) || d.keywords.some(k => k.toLowerCase().includes(keyword)));
+
+    // 1. 修改 URL (SEO友好，方便分享)
+    const newUrl = `?q=${encodeURIComponent(keyword)}`;
+    window.history.pushState({path:newUrl}, '', newUrl);
+    document.title = `${keyword} - 夸克资源搜索`;
+
+    // 2. 上报统计到 Cloudflare (异步发送，不阻塞页面)
+    // 只有配置了 WORKER_URL 且不是测试环境才发送
+    if (WORKER_URL && !WORKER_URL.includes('weiyingjun122')) {
+        fetch(`${WORKER_URL}/record?q=${encodeURIComponent(keyword)}`)
+            .catch(e => console.warn('统计上报失败:', e));
+    }
+
+    // 3. 在本地数据中查找资源
+    if (localData.length === 0) await loadData();
+
+    // 匹配逻辑：标题包含 或 关键词数组包含
+    const item = localData.find(d =>
+        d.title.toLowerCase().includes(keyword.toLowerCase()) ||
+        (d.keywords && d.keywords.some(k => k.toLowerCase().includes(keyword.toLowerCase())))
+    );
+
     const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
     let html = '';
 
-    // 🔹 不分平台，先统计
-    Stats.recordKeyword(keyword, !!item);
-    syncStatsToFile();
-
     if (item) {
-        html = `<h3>${highlight(item.title, keyword)}</h3>`;
+        // 找到资源
+        html = `<h3>✅ 找到资源：${highlight(item.title, keyword)}</h3>`;
+
         if (isMobile) {
-            html += `<p>点击下方按钮访问资源</p>
-                     <a href="${item.share_link}" target="_blank" class="btn">点击前往</a>`;
+            // 手机端：显示跳转按钮
+            html += `<p style="color:#666;margin:15px 0;">资源已准备好，请点击下方按钮访问资源</p>
+                     <a href="${item.share_link}" target="_blank" class="btn">打开夸克APP保存</a>`;
         } else {
-            html += `<p>请使用夸克或微信扫描下方二维码访问资源</p>
-                     <img src="${item.qrcode}" style="width:200px;height:200px;">`;
+            // 电脑端：显示二维码
+            html += `<p style="color:#666;">请使用夸克或微信扫描下方二维码访问资源</p>
+                     <img src="${item.qrcode}" style="width:200px;height:200px;display:block;margin:10px auto;">`;
         }
     } else {
-        html = `<h3>未找到资源</h3>
-                <p>请扫码加入资源群获取更多资源</p>
+        // 未找到资源
+        html = `<h3>⚠️ 暂未收录该资源</h3>
+                <p>关键词：<strong>${keyword}</strong></p>
+                <p>请尝试精简关键词，或扫码加入资源群求资源</p>
                 <img src="static/wechat_qrcode.png" style="width:350px;height:350px;">`;
     }
 
     modalBody.innerHTML = html;
     modal.style.display = 'flex';
-    renderRecommend();
 }
 
+// 加载全网热搜榜 (从 Cloudflare Worker 获取)
+async function loadHotKeywords() {
+    // 如果还没配置 Worker 地址，或者本地测试，就显示静态提示
+    if (!WORKER_URL || WORKER_URL.includes('weiyingjun122')) {
+        document.getElementById('recommend').innerHTML = '<div class="recommend-card"><h3>⚠️ 请配置 Worker 地址以加载热搜</h3></div>';
+        return;
+    }
 
-// ⭐ 移动端点击统计并跳转
-function recordAndGo(url, keyword, found){
-    Stats.recordKeyword(keyword, found);
-    syncStatsToFile();
-    setTimeout(()=>{ window.location.href = url; }, 100);
-}
+    try {
+        const res = await fetch(`${WORKER_URL}/hot`);
+        const hotList = await res.json();
 
-// ⭐ 同步统计到后端 stats.json
-async function syncStatsToFile(){
-    try{
-        await fetch('/stats-update',{
-            method:'POST',
-            headers:{ 'Content-Type':'application/json' },
-            body: JSON.stringify({
-                page_pv: Stats.get('page_pv',0),
-                search_keywords: Stats.get('search_keywords',{})
-            })
+        if (!hotList || hotList.length === 0) {
+            document.getElementById('recommend').innerHTML = '';
+            return;
+        }
+
+        let html = `<div class="recommend-card"><h3>🔥 全网实时热搜</h3>`;
+        hotList.forEach(item => {
+            // 搜索次数 >= 10 次的标红显示
+            const isFire = item.count >= 10 ? 'hot-fire' : '';
+            const fireIcon = item.count >= 10 ? '🔥' : '';
+
+            html += `<span class="hot-keyword ${isFire}"
+                        onclick="document.getElementById('searchInput').value='${item.word}'; document.getElementById('searchBtn').click();">
+                        ${fireIcon}${item.word}
+                     </span>`;
         });
-    }catch(e){ console.warn('syncStatsToFile failed', e); }
+        html += '</div>';
+        document.getElementById('recommend').innerHTML = html;
+
+    } catch (e) {
+        console.warn("热搜加载失败:", e);
+        // 失败时保持默认或清空，不影响主功能
+        document.getElementById('recommend').innerHTML = '<div class="recommend-card"><h3>🔥 热门资源搜索</h3><span class="hot-keyword" onclick="document.getElementById(\'searchInput\').value=\'剧本杀\';document.getElementById(\'searchBtn\').click();">剧本杀</span></div>';
+    }
 }
 
-searchBtn.addEventListener('click', search);
-searchInput.addEventListener('keypress', e=>{ if(e.key==='Enter') search(); });
+// 事件绑定
+searchBtn.addEventListener('click', () => performSearch(searchInput.value.trim()));
+searchInput.addEventListener('keypress', e => { if(e.key==='Enter') searchBtn.click(); });
 
-/* ========= 首页推荐热搜 ========= */
-function renderRecommend(){
-    const hot = Stats.hotList(10).filter(([_,v])=>v.count>=10);
-    if(!hot.length){ document.getElementById('recommend').innerHTML=''; return; }
-    let html = `<div class="recommend-card"><h3>🔥 大家都在搜</h3>`;
-    const maxCount = Math.max(...hot.map(([_,v])=>v.count));
-    hot.forEach(([kw,v])=>{
-        const size = 14 + Math.round(6*(v.count/maxCount));
-        const color = `rgb(${50+Math.round(205*(v.count/maxCount))},100,255)`;
-        html += `<span class="hot-keyword" style="font-size:${size}px;color:${color}" onclick="searchInput.value='${kw}';searchBtn.click();">${kw}</span>`;
-    });
-    html += '</div>';
-    document.getElementById('recommend').innerHTML = html;
-}
-renderRecommend();
+// 页面初始化
+window.addEventListener('DOMContentLoaded', () => {
+    loadData();        // 1. 预加载资源数据
+    loadHotKeywords(); // 2. 加载热搜榜
 
-/* ========= /#stats 热搜榜 ========= */
-function renderStatsPage(){
-    const pv = Stats.get('page_pv',0);
-    const hot = Stats.hotList(20);
-    let html = `<h2>🔥 热搜榜</h2><p>页面访问量：${pv}</p><ol style="text-align:left">`;
-    hot.forEach(([kw,v])=>{ html += `<li><b>${kw}</b>（${v.count} 次）</li>` });
-    html += '</ol>';
-    modalBody.innerHTML = html;
-    modal.style.display = 'flex';
-}
-
-window.addEventListener('hashchange',()=>{ if(location.hash==='#stats') renderStatsPage(); });
-if(location.hash==='#stats') renderStatsPage();
-
-/* ========= SEO ?q=关键词 ========= */
-const params = new URLSearchParams(location.search);
-const q = params.get('q');
-if(q){ searchInput.value=q; setTimeout(()=>searchBtn.click(),300); }
+    // 3. 检查 URL 是否带参数 (例如 ?q=剧本杀)
+    const params = new URLSearchParams(location.search);
+    const q = params.get('q');
+    if(q){
+        searchInput.value = q;
+        // 稍微延迟一下，确保数据加载完成
+        setTimeout(() => performSearch(q), 200);
+    }
+});
 </script>
 </body>
 </html>
