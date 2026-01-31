@@ -5,114 +5,67 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>夸克网盘资源搜索</title>
 <style>
-body {
-    font-family: Arial, sans-serif;
-    background: #f5f5f5;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-top: 100px;
-}
-.logo {
-    text-align: center;
-    margin-bottom: 50px;
-}
-.logo img {
-    width: 150px;
-    display: block;
-    margin: 0 auto;
-}
-.logo h1 {
-    margin-top: 10px;
-    font-size: 28px;
-    color: #333;
-}
-.search-container {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-}
-.search-container input[type="text"] {
-    width: 300px;
-    padding: 10px;
-    font-size: 16px;
-    border-radius: 5px 0 0 5px;
-    border: 1px solid #ccc;
-    outline: none;
-}
-.search-container button {
-    padding: 10px 20px;
-    font-size: 16px;
-    border-radius: 0 5px 5px 0;
-    border: 1px solid #1e90ff;
-    background-color: #1e90ff;
-    color: white;
-    cursor: pointer;
-}
-.search-container button:hover {
-    background-color: #0f78d1;
-}
-.highlight {
-    color: #e74c3c;
-    font-weight: bold;
-}
+body { font-family: Arial, sans-serif; background: #f5f5f5; display: flex; flex-direction: column; align-items: center; padding-top: 50px; margin:0; }
+
+/* logo */
+.logo { text-align: center; margin-bottom: 40px; flex-shrink: 0; }
+.logo img { max-width: 150px; height: auto; display: block; margin: 0 auto; }
+.logo h1 { margin-top: 10px; font-size: 28px; color: #333; }
+
+/* 搜索框 */
+.search-container { display: flex; justify-content: center; margin-bottom: 20px; flex-wrap: nowrap; width: 90%; max-width: 480px; }
+.search-container input[type="text"] { flex: 1; padding: 10px; font-size: 16px; border-radius: 5px 0 0 5px; border: 1px solid #ccc; outline: none; }
+.search-container button { padding: 10px 20px; font-size: 16px; border-radius: 0 5px 5px 0; border: 1px solid #1e90ff; background-color: #1e90ff; color: white; cursor: pointer; }
+.search-container button:hover { background-color: #0f78d1; }
+
+.highlight { color: #e74c3c; font-weight: bold; }
 
 /* 推荐区 */
-#recommend {
-    width: 100%;
-    max-width: 420px;
+#recommend { width: 100%; max-width: 480px; margin-bottom: 20px; }
+.recommend-card { display: flex; flex-wrap: wrap; gap: 10px; background:#fff; padding:15px; border-radius:12px; box-shadow:0 5px 15px rgba(0,0,0,.1); }
+.recommend-card h3 { width:100%; margin-bottom:10px; }
+.hot-keyword { flex: 1 1 auto; padding: 8px 14px; background: #f0f6ff; border-radius: 25px; text-align: center; cursor: pointer; transition: all 0.2s; }
+.hot-keyword:hover { background:#d0e4ff; transform: scale(1.05); }
+
+/* 热门程度字体大小和颜色 */
+.hot-keyword[data-count] {
+    font-weight: 500;
+    color: #1e90ff;
+}
+.hot-keyword[data-count]:nth-child(n) {
+    font-size: calc(14px + attr(data-count number) * 1px);
 }
 
 /* 模态框 */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 9999;
-    left: 0; top: 0;
-    width: 100%; height: 100%;
-    background-color: rgba(0,0,0,0.5);
-    justify-content: center;
-    align-items: center;
-}
-.modal-content {
-    background-color: #fff;
-    padding: 30px;
-    border-radius: 10px;
-    text-align: center;
-    max-width: 90%;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-}
-.modal-content img {
-    margin-top: 20px;
-}
-.btn {
-    display: inline-block;
-    margin-top: 15px;
-    padding: 10px 20px;
-    font-size: 16px;
-    background-color: #1e90ff;
-    color: #fff;
-    text-decoration: none;
-    border-radius: 5px;
-}
-.btn:hover {
-    background-color: #0f78d1;
+.modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+.modal-content { background-color: #fff; padding: 30px; border-radius: 10px; text-align: center; max-width: 90%; box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
+.modal-content img { margin-top: 20px; }
+.btn { display: inline-block; margin-top: 15px; padding: 10px 20px; font-size: 16px; background-color: #1e90ff; color: #fff; text-decoration: none; border-radius: 5px; }
+.btn:hover { background-color: #0f78d1; }
+
+/* 响应式 */
+@media (max-width: 480px){
+    .search-container { flex-wrap: wrap; }
+    .search-container input[type="text"] { flex: 1 1 100%; border-radius: 5px; margin-bottom: 8px; }
+    .search-container button { flex: 1 1 100%; border-radius: 5px; }
 }
 </style>
 </head>
 <body>
 
+<!-- logo -->
 <div class="logo">
     <img src="static/logo.png" alt="Logo">
     <h1>夸克网盘资源搜索</h1>
 </div>
 
+<!-- 搜索框 -->
 <div class="search-container">
     <input type="text" id="searchInput" placeholder="请输入资源关键词">
     <button id="searchBtn">搜索</button>
 </div>
 
-<!-- 推荐搜索 -->
+<!-- 首页推荐热搜 -->
 <div id="recommend"></div>
 
 <!-- 弹窗 -->
@@ -121,162 +74,107 @@ body {
 </div>
 
 <script>
-/* ========= 统计模块（完全独立，不影响搜索） ========= */
+/* ========= 统计模块 ========= */
 const Stats = {
-    get(key, def) {
-        try {
-            return JSON.parse(localStorage.getItem(key)) ?? def
-        } catch {
-            return def
-        }
-    },
-    set(key, val) {
-        localStorage.setItem(key, JSON.stringify(val))
-    },
-    pageView() {
-        const pv = this.get('page_pv', 0)
-        this.set('page_pv', pv + 1)
-    },
+    get(key, def) { try { return JSON.parse(localStorage.getItem(key)) ?? def } catch { return def } },
+    set(key, val) { localStorage.setItem(key, JSON.stringify(val)) },
+    pageView() { const pv=this.get('page_pv',0); this.set('page_pv',pv+1) },
     recordKeyword(keyword, found) {
-        const map = this.get('search_keywords', {})
-        if (!map[keyword]) {
-            map[keyword] = { count: 0, found: 0 }
-        }
-        map[keyword].count++
-        if (found) map[keyword].found++
-        this.set('search_keywords', map)
+        const map=this.get('search_keywords',{});
+        if(!map[keyword]) map[keyword]={count:0,found:0};
+        map[keyword].count++;
+        if(found) map[keyword].found++;
+        this.set('search_keywords',map)
     },
-    hotList(limit = 10) {
-        const map = this.get('search_keywords', {})
-        return Object.entries(map)
-            .sort((a, b) => b[1].count - a[1].count)
-            .slice(0, limit)
+    hotList(limit=10){
+        const map=this.get('search_keywords',{});
+        return Object.entries(map).sort((a,b)=>b[1].count-a[1].count).slice(0,limit);
     }
 }
-
 Stats.pageView()
 
-/* ========= 原有搜索逻辑（未改动） ========= */
-const modal = document.getElementById('modal');
-const modalBody = document.getElementById('modalBody');
-const searchBtn = document.getElementById('searchBtn');
-const searchInput = document.getElementById('searchInput');
+/* ========= 搜索逻辑 ========= */
+const modal=document.getElementById('modal');
+const modalBody=document.getElementById('modalBody');
+const searchBtn=document.getElementById('searchBtn');
+const searchInput=document.getElementById('searchInput');
 
-modal.addEventListener('click', (e) => {
-    if(e.target === modal) modal.style.display = 'none';
-});
+modal.addEventListener('click', e=>{ if(e.target===modal) modal.style.display='none' });
 
 async function loadData() {
-    try {
-        const res = await fetch(`data.json?t=${Date.now()}`);
-        return await res.json();
-    } catch {
-        return [];
-    }
+    try { const res=await fetch(`data.json?t=${Date.now()}`); return await res.json(); }
+    catch { return []; }
 }
 
 function highlight(text, keyword) {
     if(!keyword) return text;
-    const reg = new RegExp(`(${keyword})`, 'gi');
-    return text.replace(reg, '<span class="highlight">$1</span>');
+    const reg = new RegExp(`(${keyword})`,'gi');
+    return text.replace(reg,'<span class="highlight">$1</span>');
 }
 
 async function search() {
-    const keyword = searchInput.value.trim().toLowerCase();
+    const keyword=searchInput.value.trim().toLowerCase();
     if(!keyword) return;
-
-    const data = await loadData();
-    const item = data.find(d =>
-        d.title.toLowerCase().includes(keyword) ||
-        d.keywords.some(k => k.toLowerCase().includes(keyword))
-    );
-
-    const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
-    let html = '';
-
-    if(item) {
-        html += `<h3>${highlight(item.title, keyword)}</h3>`;
-        if(isMobile) {
-            html += `<p>点击下方按钮访问资源</p>`;
-            html += `<a href="${item.share_link}" target="_blank" class="btn">点击前往</a>`;
-        } else {
-            html += `<p>请使用夸克或微信扫描下方二维码访问资源</p>`;
-            html += `<img src="${item.qrcode}" style="width:200px;height:200px;">`;
+    const data=await loadData();
+    const item=data.find(d=>d.title.toLowerCase().includes(keyword)||d.keywords.some(k=>k.toLowerCase().includes(keyword)));
+    const isMobile=/Mobi|Android|iPhone/i.test(navigator.userAgent);
+    let html='';
+    if(item){
+        html=`<h3>${highlight(item.title, keyword)}</h3>`;
+        if(isMobile){
+            html+=`<p>点击下方按钮访问资源</p><a href="${item.share_link}" target="_blank" class="btn">点击前往</a>`;
+        }else{
+            html+=`<p>请使用夸克或微信扫描下方二维码访问资源</p><img src="${item.qrcode}" style="width:200px;height:200px;">`;
         }
-    } else {
-        html += `<h3>未找到资源</h3>`;
-        html += `<p>请扫码加入资源群获取更多资源</p>`;
-        html += `<img src="static/wechat_qrcode.png" style="width:350px;height:350px;">`;
+    }else{
+        html=`<h3>未找到资源</h3><p>请扫码加入资源群获取更多资源</p><img src="static/wechat_qrcode.png" style="width:350px;height:350px;">`;
     }
-
-    modalBody.innerHTML = html;
-    modal.style.display = 'flex';
-
-    // ⭐ 新增：关键词统计（不影响原逻辑）
-    Stats.recordKeyword(keyword, !!item)
+    modalBody.innerHTML=html;
+    modal.style.display='flex';
+    Stats.recordKeyword(keyword,!!item);
+    renderRecommend(); // 🔥 搜索后刷新推荐区
 }
 
 searchBtn.addEventListener('click', search);
-searchInput.addEventListener('keypress', e => {
-    if(e.key === 'Enter') search();
-});
+searchInput.addEventListener('keypress', e=>{ if(e.key==='Enter') search(); });
 
-/* ========= 首页推荐 ========= */
+/* ========= 首页推荐热搜（动态高亮版） ========= */
 function renderRecommend() {
-    const hot = Stats.hotList(5).filter(([_, v]) => v.count >= 5);
-    if (!hot.length) return;
+    const hot=Stats.hotList(10).filter(([_,v])=>v.count>=1);
+    if(!hot.length){ document.getElementById('recommend').innerHTML=''; return; }
 
-    let html = `
-        <div style="background:#fff;padding:15px;border-radius:10px;
-        box-shadow:0 5px 15px rgba(0,0,0,.1)">
-        <h3>🔥 大家都在搜</h3>
-        <div style="display:flex;flex-wrap:wrap;gap:10px">
-    `;
-
-    hot.forEach(([kw]) => {
-        html += `
-        <span style="padding:6px 12px;background:#f0f6ff;border-radius:20px;
-        cursor:pointer"
-        onclick="searchInput.value='${kw}';searchBtn.click();">
-        ${kw}</span>`;
+    let html=`<div class="recommend-card"><h3>🔥 大家都在搜</h3>`;
+    const maxCount = Math.max(...hot.map(([_,v])=>v.count));
+    hot.forEach(([kw,v])=>{
+        const size = 14 + Math.round(6 * (v.count/maxCount)); // 字号 14~20px
+        const color = `rgb(${50+Math.round(205*(v.count/maxCount))},${100},${255})`; // 蓝色渐变
+        html+=`<span class="hot-keyword" style="font-size:${size}px;color:${color}" onclick="searchInput.value='${kw}';searchBtn.click();">${kw}</span>`;
     });
-
-    html += '</div></div>';
-    document.getElementById('recommend').innerHTML = html;
+    html+='</div>';
+    document.getElementById('recommend').innerHTML=html;
 }
 
 renderRecommend();
 
 /* ========= /#stats 热搜榜 ========= */
 function renderStatsPage() {
-    const pv = Stats.get('page_pv', 0);
-    const hot = Stats.hotList(20);
-
-    let html = `<h2>🔥 热搜榜</h2>
-    <p>页面访问量：${pv}</p><ol style="text-align:left">`;
-
-    hot.forEach(([kw, v]) => {
-        html += `<li><b>${kw}</b>（${v.count} 次）</li>`;
-    });
-
-    html += '</ol>';
-    modalBody.innerHTML = html;
-    modal.style.display = 'flex';
+    const pv=Stats.get('page_pv',0);
+    const hot=Stats.hotList(20);
+    let html=`<h2>🔥 热搜榜</h2><p>页面访问量：${pv}</p><ol style="text-align:left">`;
+    hot.forEach(([kw,v])=>{ html+=`<li><b>${kw}</b>（${v.count} 次）</li>` });
+    html+='</ol>';
+    modalBody.innerHTML=html;
+    modal.style.display='flex';
 }
 
-window.addEventListener('hashchange', () => {
-    if(location.hash === '#stats') renderStatsPage();
-});
-if(location.hash === '#stats') renderStatsPage();
+window.addEventListener('hashchange',()=>{ if(location.hash==='#stats') renderStatsPage(); });
+if(location.hash==='#stats') renderStatsPage();
 
-/* ========= ✅ SEO 关键词直达（新增，不影响原逻辑） ========= */
-const params = new URLSearchParams(location.search);
-const q = params.get('q');
-if (q) {
-    searchInput.value = q;
-    setTimeout(() => searchBtn.click(), 300);
-}
+/* ========= SEO ?q=关键词 ========= */
+const params=new URLSearchParams(location.search);
+const q=params.get('q');
+if(q){ searchInput.value=q; setTimeout(()=>searchBtn.click(),300); }
+
 </script>
-
 </body>
 </html>
