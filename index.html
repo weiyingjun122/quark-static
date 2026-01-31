@@ -268,6 +268,14 @@ window.addEventListener('hashchange', () => {
     if(location.hash === '#stats') renderStatsPage();
 });
 if(location.hash === '#stats') renderStatsPage();
+
+/* ========= ✅ SEO 关键词直达（新增，不影响原逻辑） ========= */
+const params = new URLSearchParams(location.search);
+const q = params.get('q');
+if (q) {
+    searchInput.value = q;
+    setTimeout(() => searchBtn.click(), 300);
+}
 </script>
 
 </body>
