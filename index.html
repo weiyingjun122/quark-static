@@ -140,7 +140,7 @@ searchInput.addEventListener('keypress', e=>{ if(e.key==='Enter') search(); });
 
 /* ========= 首页推荐热搜（动态高亮版） ========= */
 function renderRecommend() {
-    const hot=Stats.hotList(10).filter(([_,v])=>v.count>=1);
+    const hot=Stats.hotList(10).filter(([_,v])=>v.count>=10);
     if(!hot.length){ document.getElementById('recommend').innerHTML=''; return; }
 
     let html=`<div class="recommend-card"><h3>🔥 大家都在搜</h3>`;
