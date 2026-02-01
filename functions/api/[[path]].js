@@ -10,7 +10,6 @@ export async function onRequest(context) {
     }
 
     const action = pathSegments[1]; // record, hot, sync, debug, health
-    const subAction = pathSegments[2]; // 如果有三级路径
 
     // CORS 配置
     const corsHeaders = {
@@ -25,61 +24,131 @@ export async function onRequest(context) {
         return new Response(null, { headers: corsHeaders });
     }
 
-    try {
-        switch (action) {
-            case 'record':
-                return await handleRecord(request, env, url, corsHeaders);
-            case 'hot':
-                return await handleHot(env, corsHeaders);
-            case 'sync':
-                return await handleSync(url, env, corsHeaders);
-            case 'debug':
-                return await handleDebug(request, env, corsHeaders);
-            case 'health':
-                return await handleHealth(corsHeaders);
-            case 'ping':
-            case 'status':
-                return await handlePing(corsHeaders);
-            default:
-                return new Response(JSON.stringify({
-                    error: "Endpoint not found",
-                    available: ["/api/record", "/api/hot", "/api/sync", "/api/debug", "/api/health", "/api/ping"]
-                }), {
-                    status: 404,
-                    headers: { "Content-Type": "application/json", ...corsHeaders }
-                });
-        }
-    } catch (error) {
-        console.error('API Error:', error);
-        return new Response(JSON.stringify({
-            error: "Internal server error",
-            message: error.message
-        }), {
-            status: 500,
-            headers: { "Content-Type": "application/json", ...corsHeaders }
-        });
+    // 路由到不同的处理函数
+    switch (action) {
+        case 'record':
+            return await handleRecord(request, env, url, corsHeaders);
+        case 'hot':
+            return await handleHot(env, corsHeaders);
+        case 'sync':
+            return await handleSync(request, env, url, corsHeaders);
+        case 'debug':
+            return await handleDebug(request, env, corsHeaders);
+        case 'health':
+            return await handleHealth(corsHeaders);
+        case 'ping':
+            return await handlePing(corsHeaders);
+        default:
+            return new Response(JSON.stringify({
+                error: "Endpoint not found",
+                available: ["/api/record", "/api/hot", "/api/sync", "/api/debug", "/api/health", "/api/ping"]
+            }), {
+                status: 404,
+                headers: { "Content-Type": "application/json", ...corsHeaders }
+            });
     }
 }
 
 // ============================================================
-// 各个处理函数
+// 增强的 handleRecord 函数
 // ============================================================
-
-// 处理记录搜索
 async function handleRecord(request, env, url, corsHeaders) {
-    const keyword = url.searchParams.get("q");
+    let keyword = '';
+    let requestMethod = request.method;
 
+    console.log(`收到 ${requestMethod} 请求到 /api/record`);
+
+    // 根据请求方法获取关键词
+    switch (requestMethod) {
+        case 'GET':
+            keyword = url.searchParams.get("q") || url.searchParams.get("keyword");
+            break;
+
+        case 'POST':
+            try {
+                const contentType = request.headers.get("content-type") || "";
+
+                if (contentType.includes("application/json")) {
+                    // JSON 格式
+                    const body = await request.json();
+                    keyword = body.keyword || body.q || body.query || body.search;
+                } else if (contentType.includes("application/x-www-form-urlencoded")) {
+                    // 表单格式
+                    const formData = await request.formData();
+                    keyword = formData.get("keyword") || formData.get("q");
+                } else if (contentType.includes("text/plain")) {
+                    // 纯文本
+                    keyword = await request.text();
+                } else {
+                    // 尝试解析为 JSON
+                    try {
+                        const body = await request.json();
+                        keyword = body.keyword;
+                    } catch {
+                        keyword = url.searchParams.get("q") || "";
+                    }
+                }
+            } catch (error) {
+                console.error("解析请求体失败:", error);
+                return new Response(JSON.stringify({
+                    success: false,
+                    error: "Parse error",
+                    message: "无法解析请求数据",
+                    hint: "请使用: GET /api/record?q=关键词 或 POST with {'keyword':'关键词'}"
+                }), {
+                    status: 400,
+                    headers: { "Content-Type": "application/json", ...corsHeaders }
+                });
+            }
+            break;
+
+        default:
+            return new Response(JSON.stringify({
+                success: false,
+                error: "Method not allowed",
+                allowed: ["GET", "POST"],
+                usage: {
+                    GET: "/api/record?q=关键词",
+                    POST: '{"keyword":"关键词"}'
+                }
+            }), {
+                status: 405,
+                headers: { "Content-Type": "application/json", ...corsHeaders }
+            });
+    }
+
+    // 验证关键词
     if (!keyword || keyword.trim() === "") {
         return new Response(JSON.stringify({
             success: false,
-            error: "Missing keyword"
+            error: "Missing keyword",
+            received: { keyword, method: requestMethod },
+            usage: {
+                GET: "/api/record?q=电影",
+                POST: 'curl -X POST -H "Content-Type: application/json" -d \'{"keyword":"电影"}\' /api/record'
+            }
         }), {
             status: 400,
             headers: { "Content-Type": "application/json", ...corsHeaders }
         });
     }
 
-    // 从 KV 获取统计
+    const normalizedKeyword = keyword.trim().toLowerCase();
+
+    // 检查关键词长度
+    if (normalizedKeyword.length > 100) {
+        return new Response(JSON.stringify({
+            success: false,
+            error: "Keyword too long",
+            maxLength: 100,
+            receivedLength: normalizedKeyword.length
+        }), {
+            status: 400,
+            headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
+    }
+
+    // 获取并更新统计
     let stats = {};
     try {
         const statsData = await env.SEARCH_STATS.get("stats");
@@ -87,29 +156,43 @@ async function handleRecord(request, env, url, corsHeaders) {
             stats = JSON.parse(statsData);
         }
     } catch (e) {
+        console.error("读取 KV 失败:", e);
         stats = {};
     }
 
-    // 更新统计
-    const normalizedKeyword = keyword.trim().toLowerCase();
-    stats[normalizedKeyword] = (stats[normalizedKeyword] || 0) + 1;
+    // 更新计数
+    const currentCount = (stats[normalizedKeyword] || 0) + 1;
+    stats[normalizedKeyword] = currentCount;
 
     // 保存到 KV
     try {
         await env.SEARCH_STATS.put("stats", JSON.stringify(stats));
     } catch (e) {
-        console.error("KV save error:", e);
+        console.error("保存 KV 失败:", e);
+        // 继续返回响应，即使保存失败
     }
 
-    return new Response(JSON.stringify({
+    // 准备响应
+    const responseData = {
         success: true,
         keyword: normalizedKeyword,
-        count: stats[normalizedKeyword],
-        timestamp: Date.now()
-    }), {
-        headers: { "Content-Type": "application/json", ...corsHeaders }
+        count: currentCount,
+        method: requestMethod,
+        timestamp: new Date().toISOString(),
+        isHot: currentCount >= 10,
+        hotLevel: getHotLevel(currentCount)
+    };
+
+    return new Response(JSON.stringify(responseData), {
+        headers: {
+            "Content-Type": "application/json",
+            ...corsHeaders,
+            "Cache-Control": "no-store" // 不缓存统计响应
+        }
     });
 }
+
+// 其他处理函数保持不变...
 
 // 处理热搜
 async function handleHot(env, corsHeaders) {
