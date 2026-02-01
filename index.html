@@ -77,10 +77,9 @@ body { font-family: "Microsoft YaHei", Arial, sans-serif; background: #f5f5f5; d
 
 <script>
 // ============================================================
-// ⚠️⚠️⚠️ 请将下方地址替换为您在 Cloudflare 部署的 Worker 地址
-// 例如: https://quark-search-api.zhangsan.workers.dev
+// 🔄 修改为使用 Cloudflare Pages Functions API
+// 所有 API 调用现在都指向同一域名的 /api 路径
 // ============================================================
-const WORKER_URL = 'https://quark-search-api.weiyingjun122.workers.dev';
 
 // DOM 元素
 const modal = document.getElementById('modal');
@@ -95,6 +94,7 @@ modal.addEventListener('click', e => { if(e.target === modal) modal.style.displa
 let localData = [];
 async function loadData() {
     try {
+        // Pages 环境直接使用相对路径
         const res = await fetch(`data.json?t=${Date.now()}`);
         localData = await res.json();
     } catch {
@@ -119,32 +119,30 @@ async function performSearch(keyword) {
     window.history.pushState({path:newUrl}, '', newUrl);
     document.title = `${keyword} - 夸克资源搜索`;
 
-    // 2. 上报统计到 Cloudflare (异步发送，不阻塞页面)
-    // 只有配置了 WORKER_URL 且不是测试环境才发送
-    // 上报统计到 Cloudflare
-    if (WORKER_URL) {
-    // 添加更详细的错误处理
-    const reportUrl = `${WORKER_URL}/record?q=${encodeURIComponent(keyword)}`;
-
-    fetch(reportUrl)
-        .then(response => {
-        console.log('统计上报状态:', response.status);
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-        return response.json();
-        })
-        .then(data => {
-        console.log('统计成功:', data);
-        // 可以在这里更新本地计数显示
-        if (data.count === 10) {
-            console.log('这个关键词已达到热搜阈值！');
-        }
-        })
-        .catch(e => {
-        console.warn('统计上报失败:', e);
-        // 可以选择重试或记录到 localStorage 稍后上报
+    // 2. 上报统计到 Pages API
+    try {
+        const reportRes = await fetch('/api/record', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ keyword: keyword })
         });
+
+        if (reportRes.ok) {
+            const reportData = await reportRes.json();
+            console.log('统计成功:', reportData);
+
+            // 如果达到热搜阈值，可以触发热搜更新
+            if (reportData.count === 10) {
+                console.log('这个关键词已达到热搜阈值！');
+                // 可以立即刷新热搜榜
+                loadHotKeywords();
+            }
+        }
+    } catch (e) {
+        console.warn('统计上报失败:', e);
+        // 可以存储到 localStorage 稍后重试
     }
 
     // 3. 在本地数据中查找资源
@@ -184,20 +182,20 @@ async function performSearch(keyword) {
     modal.style.display = 'flex';
 }
 
-// 加载全网热搜榜 (从 Cloudflare Worker 获取)
+// 加载全网热搜榜 (从 Pages API 获取)
 async function loadHotKeywords() {
-    // 如果还没配置 Worker 地址，或者本地测试，就显示静态提示
-    if (!WORKER_URL || WORKER_URL.includes('你的名字')) {
-        document.getElementById('recommend').innerHTML = '<div class="recommend-card"><h3>⚠️ 请配置 Worker 地址以加载热搜</h3></div>';
-        return;
-    }
-
     try {
-        const res = await fetch(`${WORKER_URL}/hot`);
+        const res = await fetch('/api/hot');
+
+        if (!res.ok) {
+            throw new Error(`API 返回错误: ${res.status}`);
+        }
+
         const hotList = await res.json();
 
         if (!hotList || hotList.length === 0) {
-            document.getElementById('recommend').innerHTML = '';
+            // 如果没有热搜数据，显示默认提示
+            document.getElementById('recommend').innerHTML = '<div class="recommend-card"><h3>🔥 热门资源搜索</h3><span class="hot-keyword" onclick="document.getElementById(\'searchInput\').value=\'剧本杀\';document.getElementById(\'searchBtn\').click();">剧本杀</span></div>';
             return;
         }
 
@@ -207,8 +205,11 @@ async function loadHotKeywords() {
             const isFire = item.count >= 10 ? 'hot-fire' : '';
             const fireIcon = item.count >= 10 ? '🔥' : '';
 
+            // 转义特殊字符，避免 XSS
+            const safeWord = item.word.replace(/'/g, "\\'");
+
             html += `<span class="hot-keyword ${isFire}"
-                        onclick="document.getElementById('searchInput').value='${item.word}'; document.getElementById('searchBtn').click();">
+                        onclick="document.getElementById('searchInput').value='${safeWord}'; document.getElementById('searchBtn').click();">
                         ${fireIcon}${item.word}
                      </span>`;
         });
@@ -217,7 +218,9 @@ async function loadHotKeywords() {
 
     } catch (e) {
         console.warn("热搜加载失败:", e);
-        // 失败时保持默认或清空，不影响主功能
+        // 失败时显示静态推荐
+        //document.getElementById('recommend').innerHTML = '<div class="recommend-card"><h3>🔥 热门资源搜索</h3><span class="hot-keyword" onclick="document.getElementById(\'searchInput\').value=\'剧本杀\';document.getElementById(\'searchBtn\').click();">剧本杀</span><span class="hot-keyword" onclick="document.getElementById(\'searchInput\').value=\'考研资料\';document.getElementById(\'searchBtn\').click();">考研资料</span><span class="hot-keyword" onclick="document.getElementById(\'searchInput\').value=\'电影\';document.getElementById(\'searchBtn\').click();">电影</span></div>';
+
         document.getElementById('recommend').innerHTML = '<div class="recommend-card"><h3>🔥 热门资源搜索</h3><span class="hot-keyword" onclick="document.getElementById(\'searchInput\').value=\'剧本杀\';document.getElementById(\'searchBtn\').click();">剧本杀</span></div>';
     }
 }
