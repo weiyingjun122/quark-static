@@ -9,6 +9,12 @@ on:
       - 'scripts/**'
       - 'index.html'
       - 'worker-test.html'  # 添加这行
+  workflow_dispatch:  # 添加这行，允许手动触发
+    inputs:
+      description:
+        description: '手动运行的描述'
+        required: false
+        default: '手动运行部署'
 
 jobs:
   build-deploy:
