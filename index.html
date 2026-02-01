@@ -112,35 +112,83 @@ function highlight(text, keyword) {
 
 // 核心搜索功能
 async function performSearch(keyword) {
+    console.log('=== performSearch 调试信息 ===');
+    console.log('当前域名:', window.location.hostname);
+    console.log('页面URL:', window.location.href);
+
     if (!keyword) return;
 
-    // 1. 修改 URL (SEO友好，方便分享)
+    // 1. 修改 URL
     const newUrl = `?q=${encodeURIComponent(keyword)}`;
     window.history.pushState({path:newUrl}, '', newUrl);
     document.title = `${keyword} - 夸克资源搜索`;
 
-    // 2. 上报统计到 Pages API - 改为 GET 请求
+    // 2. 上报统计到 Pages API
+    console.log('=== 开始统计上报 ===');
+
     try {
-        const reportRes = await fetch(`/api/record?q=${encodeURIComponent(keyword)}`);
+        // 使用相对路径，确保调用正确的域名
+        const apiPath = `/api/record?q=${encodeURIComponent(keyword)}`;
+        console.log('API路径:', apiPath);
 
-        if (reportRes.ok) {
-            const reportData = await reportRes.json();
-            console.log('统计成功:', reportData);
+        const startTime = Date.now();
+        const reportRes = await fetch(apiPath);
+        const endTime = Date.now();
 
-            // 只有当搜索次数达到热搜阈值（≥10次）时才刷新热搜榜
+        console.log('请求耗时:', (endTime - startTime) + 'ms');
+        console.log('HTTP状态码:', reportRes.status);
+        console.log('状态文本:', reportRes.statusText);
+        console.log('响应URL:', reportRes.url);
+
+        // 检查响应头
+        console.log('响应头-CF-Ray:', reportRes.headers.get('cf-ray'));
+        console.log('响应头-CF-Cache-Status:', reportRes.headers.get('cf-cache-status'));
+
+        // 读取响应
+        const responseText = await reportRes.text();
+        console.log('响应内容:', responseText);
+
+        // 解析 JSON
+        let reportData;
+        try {
+            reportData = JSON.parse(responseText);
+            console.log('解析成功:', reportData);
+        } catch (parseError) {
+            console.error('JSON解析失败:', parseError);
+            reportData = {
+                success: false,
+                error: 'Invalid JSON',
+                raw: responseText,
+                status: reportRes.status
+            };
+        }
+
+        // 处理结果
+        if (reportRes.ok && reportData.success) {
+            console.log('✅ 统计成功');
+
             if (reportData.count >= 10) {
-                console.log(`关键词"${keyword}"已达到热搜阈值，刷新热搜榜`);
+                console.log('🔥 达到热搜阈值');
                 loadHotKeywords();
-            } else {
-                console.log(`关键词"${keyword}"当前搜索${reportData.count}次，未达到热搜阈值`);
             }
         } else {
-            const errorData = await reportRes.json();
-            console.warn('统计失败:', errorData);
+            console.error('❌ 统计失败');
+            console.error('失败详情:', reportData);
+
+            // 如果是400错误，显示详细诊断
+            if (reportRes.status === 400) {
+                await diagnose400Error(keyword, apiPath, reportRes, reportData);
+            }
         }
-    } catch (e) {
-        console.warn('统计上报失败:', e);
+
+    } catch (fetchError) {
+        console.error('❌ 网络请求异常');
+        console.error('错误类型:', fetchError.name);
+        console.error('错误信息:', fetchError.message);
+        console.error('错误堆栈:', fetchError.stack);
     }
+
+    console.log('=== 统计上报结束 ===');
 
     // 3. 在本地数据中查找资源
     if (localData.length === 0) await loadData();
@@ -177,6 +225,43 @@ async function performSearch(keyword) {
 
     modalBody.innerHTML = html;
     modal.style.display = 'flex';
+}
+
+// 诊断400错误的函数
+async function diagnose400Error(keyword, apiPath, response, data) {
+    console.log('=== 400错误诊断 ===');
+
+    // 测试1：直接访问完整URL
+    const fullUrl = window.location.origin + apiPath;
+    console.log('测试完整URL:', fullUrl);
+
+    try {
+        const directTest = await fetch(fullUrl);
+        const directText = await directTest.text();
+        console.log('直接访问结果-状态:', directTest.status);
+        console.log('直接访问结果-内容:', directText);
+    } catch (e) {
+        console.log('直接访问错误:', e.message);
+    }
+
+    // 测试2：测试不同域名
+    console.log('测试不同域名...');
+    const domains = [
+        window.location.origin,
+        'https://quark-static.pages.dev'
+    ];
+
+    for (const domain of domains) {
+        const testUrl = domain + '/api/record?q=' + encodeURIComponent(keyword);
+        console.log(`测试 ${domain}:`, testUrl);
+
+        try {
+            const testRes = await fetch(testUrl);
+            console.log(`  状态: ${testRes.status}`);
+        } catch (e) {
+            console.log(`  错误: ${e.message}`);
+        }
+    }
 }
 
 // 加载全网热搜榜 (从 Pages API 获取)
