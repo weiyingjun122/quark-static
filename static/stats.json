@@ -1,1 +1,8 @@
-{}
+{
+  "success": true,
+  "threshold": 10,
+  "totalKeywords": 1,
+  "filteredKeywords": 0,
+  "stats": {},
+  "generatedAt": "2026-02-01T02:04:01.953Z"
+}
