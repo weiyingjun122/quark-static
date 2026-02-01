@@ -119,30 +119,27 @@ async function performSearch(keyword) {
     window.history.pushState({path:newUrl}, '', newUrl);
     document.title = `${keyword} - 夸克资源搜索`;
 
-    // 2. 上报统计到 Pages API
+    // 2. 上报统计到 Pages API - 改为 GET 请求
     try {
-        const reportRes = await fetch('/api/record', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ keyword: keyword })
-        });
+        const reportRes = await fetch(`/api/record?q=${encodeURIComponent(keyword)}`);
 
         if (reportRes.ok) {
             const reportData = await reportRes.json();
             console.log('统计成功:', reportData);
 
-            // 如果达到热搜阈值，可以触发热搜更新
-            if (reportData.count === 10) {
-                console.log('这个关键词已达到热搜阈值！');
-                // 可以立即刷新热搜榜
+            // 只有当搜索次数达到热搜阈值（≥10次）时才刷新热搜榜
+            if (reportData.count >= 10) {
+                console.log(`关键词"${keyword}"已达到热搜阈值，刷新热搜榜`);
                 loadHotKeywords();
+            } else {
+                console.log(`关键词"${keyword}"当前搜索${reportData.count}次，未达到热搜阈值`);
             }
+        } else {
+            const errorData = await reportRes.json();
+            console.warn('统计失败:', errorData);
         }
     } catch (e) {
         console.warn('统计上报失败:', e);
-        // 可以存储到 localStorage 稍后重试
     }
 
     // 3. 在本地数据中查找资源
