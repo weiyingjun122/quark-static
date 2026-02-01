@@ -74,7 +74,7 @@ jobs:
           # fi
 
           # 创建搜索目录
-          cd /
+          cd /github/workspace
           mkdir -p search
 
           # 检查是否有统计信息
