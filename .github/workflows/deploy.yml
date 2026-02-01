@@ -101,11 +101,32 @@ jobs:
         env:
             GH_PAT: ${{ secrets.GH_PAT }}
         run: |
+            # git config --global user.name "github-actions[bot]"
+            # git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            # git add data.json static/qrcode/* static/stats.json search/ || echo "No changes to add"
+            # git commit -m "自动生成二维码 & 更新 data.json & stats.json & search" || echo "No changes to commit"
+            # git push https://$GH_PAT@github.com/weiyingjun122/quark-static.git main
+
+            # 配置 git
             git config --global user.name "github-actions[bot]"
             git config --global user.email "github-actions[bot]@users.noreply.github.com"
-            git add data.json static/qrcode/* static/stats.json search/ || echo "No changes to add"
-            git commit -m "自动生成二维码 & 更新 data.json & stats.json & search" || echo "No changes to commit"
-            git push https://$GH_PAT@github.com/weiyingjun122/quark-static.git main
+
+            # 只添加实际存在的文件
+            git add data.json 2>/dev/null || true
+            git add static/status.json 2>/dev/null || true
+            git add static/qrcode/* 2>/dev/null || true
+            git add search/ 2>/dev/null || true
+
+            # 检查是否有变更
+            if ! git diff --cached --quiet; then
+                echo "有变更，提交并推送..."
+                git commit -m "自动生成: SEO页面和资源文件 - $(date '+%Y-%m-%d %H:%M:%S')"
+                git push https://$GH_PAT@github.com/weiyingjun122/quark-static.git main
+            else
+                echo "没有变更，创建空提交..."
+                git commit --allow-empty -m "空提交触发部署 - $(date '+%Y-%m-%d %H:%M:%S')"
+                git push https://$GH_PAT@github.com/weiyingjun122/quark-static.git main
+            fi
 
 
       # 8️⃣ 部署到 Cloudflare Pages
