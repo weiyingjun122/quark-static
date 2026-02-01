@@ -112,83 +112,78 @@ function highlight(text, keyword) {
 
 // 核心搜索功能
 async function performSearch(keyword) {
-    console.log('=== performSearch 调试信息 ===');
-    console.log('当前域名:', window.location.hostname);
-    console.log('页面URL:', window.location.href);
+    // === 严格的参数验证 ===
+    console.group('🔍 performSearch 参数验证');
+    console.log('原始参数:', keyword);
+    console.log('参数类型:', typeof keyword);
 
-    if (!keyword) return;
+    // 检查 undefined 和 null
+    if (keyword === undefined) {
+        console.error('❌ 错误：参数是 undefined');
+        console.trace('调用堆栈：');
+        console.groupEnd();
+        return;
+    }
 
+    if (keyword === null) {
+        console.error('❌ 错误：参数是 null');
+        console.groupEnd();
+        return;
+    }
+
+    // 转换为字符串并去除空格
+    keyword = String(keyword).trim();
+    console.log('转换后:', keyword);
+    console.log('长度:', keyword.length);
+
+    // 检查是否为空字符串
+    if (keyword.length === 0) {
+        console.error('❌ 错误：关键词为空字符串');
+        console.groupEnd();
+        alert('请输入搜索关键词');
+        return;
+    }
+
+    // 检查是否只是空格
+    if (!keyword.replace(/\s/g, '').length) {
+        console.error('❌ 错误：关键词只包含空格');
+        console.groupEnd();
+        alert('请输入有效的搜索关键词');
+        return;
+    }
+
+    console.log('✅ 参数验证通过');
+    console.groupEnd();
+
+    // === 继续执行正常逻辑 ===
     // 1. 修改 URL
     const newUrl = `?q=${encodeURIComponent(keyword)}`;
     window.history.pushState({path:newUrl}, '', newUrl);
     document.title = `${keyword} - 夸克资源搜索`;
 
     // 2. 上报统计到 Pages API
-    console.log('=== 开始统计上报 ===');
-
+    console.log('📊 发送统计请求...');
     try {
-        // 使用相对路径，确保调用正确的域名
-        const apiPath = `/api/record?q=${encodeURIComponent(keyword)}`;
-        console.log('API路径:', apiPath);
+        const apiUrl = `/api/record?q=${encodeURIComponent(keyword)}`;
+        console.log('请求URL:', apiUrl);
 
-        const startTime = Date.now();
-        const reportRes = await fetch(apiPath);
-        const endTime = Date.now();
+        const reportRes = await fetch(apiUrl);
+        console.log('响应状态:', reportRes.status);
 
-        console.log('请求耗时:', (endTime - startTime) + 'ms');
-        console.log('HTTP状态码:', reportRes.status);
-        console.log('状态文本:', reportRes.statusText);
-        console.log('响应URL:', reportRes.url);
-
-        // 检查响应头
-        console.log('响应头-CF-Ray:', reportRes.headers.get('cf-ray'));
-        console.log('响应头-CF-Cache-Status:', reportRes.headers.get('cf-cache-status'));
-
-        // 读取响应
-        const responseText = await reportRes.text();
-        console.log('响应内容:', responseText);
-
-        // 解析 JSON
-        let reportData;
-        try {
-            reportData = JSON.parse(responseText);
-            console.log('解析成功:', reportData);
-        } catch (parseError) {
-            console.error('JSON解析失败:', parseError);
-            reportData = {
-                success: false,
-                error: 'Invalid JSON',
-                raw: responseText,
-                status: reportRes.status
-            };
-        }
-
-        // 处理结果
-        if (reportRes.ok && reportData.success) {
-            console.log('✅ 统计成功');
+        if (reportRes.ok) {
+            const reportData = await reportRes.json();
+            console.log('统计成功:', reportData);
 
             if (reportData.count >= 10) {
-                console.log('🔥 达到热搜阈值');
                 loadHotKeywords();
             }
         } else {
-            console.error('❌ 统计失败');
-            console.error('失败详情:', reportData);
-
-            // 如果是400错误，显示详细诊断
-            if (reportRes.status === 400) {
-                await diagnose400Error(keyword, apiPath, reportRes, reportData);
-            }
+            const errorText = await reportRes.text();
+            console.warn('统计失败:', reportRes.status, errorText);
         }
-
-    } catch (fetchError) {
-        console.error('❌ 网络请求异常');
-        console.error('错误类型:', fetchError.name);
-        console.error('错误信息:', fetchError.message);
-        console.error('错误堆栈:', fetchError.stack);
+    } catch (e) {
+        console.warn('统计上报失败:', e);
     }
-
-    console.log('=== 统计上报结束 ===');
 
     // 3. 在本地数据中查找资源
     if (localData.length === 0) await loadData();
