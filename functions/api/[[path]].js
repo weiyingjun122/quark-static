@@ -234,45 +234,94 @@ async function handleHot(env, corsHeaders) {
     });
 }
 
-// 处理同步
-async function handleSync(url, env, corsHeaders) {
-    const secret = url.searchParams.get("key");
+// 修改handleSync函数，添加错误处理
+async function handleSync(request, env, url, corsHeaders) {
+    try {
+        console.log("🔧 handleSync 被调用");
 
-    if (secret !== "my_secret_sync_key") {
-        return new Response("Unauthorized", {
-            status: 401,
-            headers: { "Content-Type": "text/plain" }
+        const secret = url.searchParams.get("key");
+        console.log("收到的密钥:", secret ? "已提供" : "未提供");
+
+        if (secret !== "my_secret_sync_key") {
+            console.log("❌ 密钥验证失败");
+            return new Response("Unauthorized", {
+                status: 401,
+                headers: {
+                    "Content-Type": "text/plain",
+                    ...corsHeaders
+                }
+            });
+        }
+
+        console.log("✅ 密钥验证通过");
+
+        let stats = {};
+        try {
+            const statsData = await env.SEARCH_STATS.get("stats");
+            console.log("从KV获取数据:", statsData ? "成功" : "空");
+
+            if (statsData) {
+                stats = JSON.parse(statsData);
+                console.log("解析后的统计:", Object.keys(stats).length, "个关键词");
+            }
+        } catch (e) {
+            console.error("读取KV失败:", e);
+            stats = {};
+        }
+
+        const THRESHOLD = 10;
+        console.log("筛选阈值:", THRESHOLD);
+
+        // 筛选统计
+        const filteredStats = {};
+        Object.entries(stats).forEach(([word, count]) => {
+            if (count >= THRESHOLD) {
+                filteredStats[word] = count;
+            }
+        });
+
+        console.log("筛选后关键词数:", Object.keys(filteredStats).length);
+
+        // 排序
+        const sortedEntries = Object.entries(filteredStats)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 50);
+
+        console.log("排序后保留:", sortedEntries.length, "个");
+
+        const result = Object.fromEntries(sortedEntries);
+
+        // 返回结果
+        return new Response(JSON.stringify({
+            success: true,
+            count: sortedEntries.length,
+            stats: result,
+            timestamp: new Date().toISOString()
+        }), {
+            status: 200,
+            headers: {
+                "Content-Type": "application/json",
+                ...corsHeaders
+            }
+        });
+
+    } catch (error) {
+        console.error("❌ handleSync 错误详情:", error);
+        console.error("错误堆栈:", error.stack);
+
+        return new Response(JSON.stringify({
+            success: false,
+            error: error.message,
+            stack: error.stack,
+            timestamp: new Date().toISOString()
+        }), {
+            status: 500,
+            headers: {
+                "Content-Type": "application/json",
+                ...corsHeaders
+            }
         });
     }
-
-    let stats = {};
-    try {
-        const statsData = await env.SEARCH_STATS.get("stats");
-        if (statsData) {
-            stats = JSON.parse(statsData);
-        }
-    } catch (e) {
-        stats = {};
-    }
-
-    const THRESHOLD = 10;
-    const filteredStats = {};
-
-    Object.entries(stats).forEach(([word, count]) => {
-        if (count >= THRESHOLD) {
-            filteredStats[word] = count;
-        }
-    });
-
-    const sortedEntries = Object.entries(filteredStats)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 50);
-
-    const result = Object.fromEntries(sortedEntries);
-
-    return new Response(JSON.stringify(result), {
-        headers: { "Content-Type": "application/json" } // sync不需要CORS
-    });
 }
 
 // 处理调试
