@@ -8,6 +8,7 @@ on:
       - 'resources.xlsx'
       - 'scripts/**'
       - 'index.html'
+      - 'worker-test.html'  # 添加这行
 
 jobs:
   build-deploy:

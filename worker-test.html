@@ -1,60 +1,185 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>手机统计测试</title>
+    <title>Worker 统计测试</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
-    <h1>手机统计测试</h1>
-    <button onclick="testRecord()">测试记录搜索</button>
-    <button onclick="testHot()">测试获取热搜</button>
-    <button onclick="testDebug()">测试调试接口</button>
+    <h1>📱 Worker 统计测试</h1>
 
-    <div id="result"></div>
+    <div>
+        <p><strong>Worker URL:</strong> https://quark-search-api.weiyingjun122.workers.dev</p>
+        <p><strong>测试方法:</strong> 点击下方按钮测试各个接口</p>
+    </div>
+
+    <div style="margin: 20px 0;">
+        <button onclick="testDirectRecord()">🔗 直接测试 /record 接口</button>
+        <button onclick="testRecord()">📝 测试记录搜索</button>
+        <button onclick="testHot()">🔥 测试获取热搜</button>
+        <button onclick="testDebug()">🐛 测试调试接口</button>
+        <button onclick="testAll()">🚀 运行所有测试</button>
+    </div>
+
+    <div>
+        <h3>📋 设备信息</h3>
+        <div id="deviceInfo"></div>
+    </div>
+
+    <div>
+        <h3>📜 测试结果</h3>
+        <div id="result" style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin-top: 10px; max-height: 400px; overflow-y: auto;"></div>
+    </div>
 
     <script>
         const WORKER_URL = 'https://quark-search-api.weiyingjun122.workers.dev';
 
-        function log(msg) {
-            document.getElementById('result').innerHTML += `<div>${msg}</div>`;
-            console.log(msg);
+        function log(msg, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            const color = type === 'error' ? 'red' : type === 'success' ? 'green' : 'black';
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+
+            const logItem = document.createElement('div');
+            logItem.style.margin = '5px 0';
+            logItem.style.padding = '5px';
+            logItem.style.borderLeft = `3px solid ${color}`;
+            logItem.style.backgroundColor = '#fff';
+            logItem.innerHTML = `<strong>${prefix}</strong> ${msg}`;
+
+            resultDiv.appendChild(logItem);
+            resultDiv.scrollTop = resultDiv.scrollHeight;
+            console.log(`${prefix} ${msg}`);
+        }
+
+        // 直接测试接口（不用 fetch，直接访问）
+        function testDirectRecord() {
+            const keyword = '直接测试_' + new Date().toLocaleTimeString();
+            const url = `${WORKER_URL}/record?q=${encodeURIComponent(keyword)}`;
+
+            log(`打开新窗口访问: ${url}`);
+
+            // 方法1：直接在新窗口打开
+            window.open(url, '_blank');
+
+            // 方法2：使用 iframe（更友好）
+            const iframe = document.createElement('iframe');
+            iframe.src = url;
+            iframe.style.display = 'none';
+            document.body.appendChild(iframe);
+
+            // 方法3：使用 fetch 测试
+            fetch(url)
+                .then(r => r.json())
+                .then(data => {
+                    log(`✅ 直接测试成功: ${JSON.stringify(data)}`, 'success');
+                })
+                .catch(e => {
+                    log(`❌ 直接测试失败: ${e.message}`, 'error');
+                });
         }
 
         function testRecord() {
             const keyword = '手机测试_' + Date.now();
-            log(`📱 测试手机搜索: ${keyword}`);
+            log(`📱 测试搜索: "${keyword}"`);
 
             fetch(`${WORKER_URL}/record?q=${encodeURIComponent(keyword)}`)
-                .then(r => r.json())
-                .then(data => log(`✅ 成功: ${JSON.stringify(data)}`))
-                .catch(e => log(`❌ 失败: ${e}`));
+                .then(r => {
+                    log(`HTTP 状态: ${r.status} ${r.statusText}`);
+                    return r.json();
+                })
+                .then(data => log(`✅ 成功: ${JSON.stringify(data)}`, 'success'))
+                .catch(e => log(`❌ 失败: ${e.message}`, 'error'));
         }
 
         function testHot() {
             log('🔥 获取热搜...');
+
             fetch(`${WORKER_URL}/hot`)
                 .then(r => r.json())
-                .then(data => log(`✅ 热搜: ${JSON.stringify(data).slice(0, 200)}...`))
-                .catch(e => log(`❌ 失败: ${e}`));
+                .then(data => {
+                    if (Array.isArray(data) && data.length > 0) {
+                        log(`✅ 获取到 ${data.length} 个热搜`, 'success');
+                        data.forEach(item => {
+                            log(`   "${item.word}": ${item.count}次`);
+                        });
+                    } else {
+                        log('ℹ️ 暂无达到阈值(≥10次)的热搜词');
+                    }
+                })
+                .catch(e => log(`❌ 失败: ${e.message}`, 'error'));
         }
 
         function testDebug() {
-            log('🐛 调试接口...');
+            log('🐛 获取调试信息...');
+
             fetch(`${WORKER_URL}/debug`)
                 .then(r => r.json())
                 .then(data => {
-                    log(`✅ 总关键词: ${data.statsSummary?.totalKeywords}`);
-                    log(`✅ 总搜索次数: ${data.statsSummary?.totalSearches}`);
-                    log(`✅ 达到阈值: ${data.statsSummary?.keywordsAboveThreshold}`);
+                    if (data.statsSummary) {
+                        const s = data.statsSummary;
+                        log(`✅ 总关键词: ${s.totalKeywords}`, 'success');
+                        log(`✅ 总搜索次数: ${s.totalSearches}`, 'success');
+                        log(`✅ 达到阈值(≥10): ${s.keywordsAboveThreshold}`, 'success');
+
+                        if (s.top10Keywords && s.top10Keywords.length > 0) {
+                            log('📊 热门关键词:');
+                            s.top10Keywords.forEach(item => {
+                                log(`   "${item.word}": ${item.count}次`);
+                            });
+                        }
+                    } else {
+                        log('❌ 未找到统计数据');
+                    }
                 })
-                .catch(e => log(`❌ 失败: ${e}`));
+                .catch(e => log(`❌ 失败: ${e.message}`, 'error'));
         }
 
-        // 页面加载时自动测试
-        window.onload = function() {
+        function testAll() {
+            log('🚀 开始运行完整测试...');
+            testRecord();
+            setTimeout(testDebug, 1000);
+            setTimeout(testHot, 2000);
+        }
+
+        // 显示设备信息
+        function showDeviceInfo() {
+            const deviceInfo = document.getElementById('deviceInfo');
+            const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
+
+            deviceInfo.innerHTML = `
+                <p><strong>设备类型:</strong> ${isMobile ? '📱 手机' : '💻 电脑'}</p>
+                <p><strong>User Agent:</strong> ${navigator.userAgent}</p>
+                <p><strong>在线状态:</strong> ${navigator.onLine ? '✅ 在线' : '❌ 离线'}</p>
+                <p><strong>语言:</strong> ${navigator.language}</p>
+                <p><strong>Worker URL:</strong> ${WORKER_URL}</p>
+                <p><strong>测试页面 URL:</strong> ${window.location.href}</p>
+            `;
+
             log(`设备: ${navigator.userAgent}`);
-            log(`是否为手机: ${/Mobi|Android|iPhone/i.test(navigator.userAgent) ? '是' : '否'}`);
-            log(`Worker URL: ${WORKER_URL}`);
+            log(`是否为手机: ${isMobile ? '是' : '否'}`);
+            log(`在线状态: ${navigator.onLine ? '在线' : '离线'}`);
+        }
+
+        // 页面加载完成
+        window.onload = function() {
+            showDeviceInfo();
+            log('🟢 测试页面已加载完成');
+            log(`📱 请点击上方按钮开始测试`);
+
+            // 自动运行一次快速测试
+            setTimeout(() => {
+                log('⚡ 自动运行快速测试...');
+                testRecord();
+            }, 1000);
         };
+
+        // 监听网络状态
+        window.addEventListener('online', () => {
+            log('🌐 网络已连接', 'success');
+        });
+
+        window.addEventListener('offline', () => {
+            log('🌐 网络已断开', 'error');
+        });
     </script>
 </body>
 </html>
