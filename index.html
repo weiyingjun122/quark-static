@@ -121,7 +121,7 @@ async function performSearch(keyword) {
 
     // 2. 上报统计到 Cloudflare (异步发送，不阻塞页面)
     // 只有配置了 WORKER_URL 且不是测试环境才发送
-    if (WORKER_URL && !WORKER_URL.includes('weiyingjun122')) {
+    if (WORKER_URL && !WORKER_URL.includes('你的名字')) {
         fetch(`${WORKER_URL}/record?q=${encodeURIComponent(keyword)}`)
             .catch(e => console.warn('统计上报失败:', e));
     }
@@ -166,7 +166,7 @@ async function performSearch(keyword) {
 // 加载全网热搜榜 (从 Cloudflare Worker 获取)
 async function loadHotKeywords() {
     // 如果还没配置 Worker 地址，或者本地测试，就显示静态提示
-    if (!WORKER_URL || WORKER_URL.includes('weiyingjun122')) {
+    if (!WORKER_URL || WORKER_URL.includes('你的名字')) {
         document.getElementById('recommend').innerHTML = '<div class="recommend-card"><h3>⚠️ 请配置 Worker 地址以加载热搜</h3></div>';
         return;
     }
