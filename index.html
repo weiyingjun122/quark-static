@@ -121,9 +121,30 @@ async function performSearch(keyword) {
 
     // 2. 上报统计到 Cloudflare (异步发送，不阻塞页面)
     // 只有配置了 WORKER_URL 且不是测试环境才发送
-    if (WORKER_URL && !WORKER_URL.includes('你的名字')) {
-        fetch(`${WORKER_URL}/record?q=${encodeURIComponent(keyword)}`)
-            .catch(e => console.warn('统计上报失败:', e));
+    // 上报统计到 Cloudflare
+    if (WORKER_URL) {
+    // 添加更详细的错误处理
+    const reportUrl = `${WORKER_URL}/record?q=${encodeURIComponent(keyword)}`;
+
+    fetch(reportUrl)
+        .then(response => {
+        console.log('统计上报状态:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        return response.json();
+        })
+        .then(data => {
+        console.log('统计成功:', data);
+        // 可以在这里更新本地计数显示
+        if (data.count === 10) {
+            console.log('这个关键词已达到热搜阈值！');
+        }
+        })
+        .catch(e => {
+        console.warn('统计上报失败:', e);
+        // 可以选择重试或记录到 localStorage 稍后上报
+        });
     }
 
     // 3. 在本地数据中查找资源
