@@ -12,11 +12,20 @@ export async function onRequest(context) {
     const action = pathSegments[1]; // record, hot, sync, debug, health
 
     // CORS 配置
+    // const corsHeaders = {
+    //     "Access-Control-Allow-Origin": "*",
+    //     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    //     "Access-Control-Allow-Headers": "Content-Type",
+    //     "Access-Control-Max-Age": "86400",
+    // };
+    // 增强的 CORS 配置
     const corsHeaders = {
         "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS, PATCH",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, Accept, Origin",
+        "Access-Control-Allow-Credentials": "true",
         "Access-Control-Max-Age": "86400",
+        "Vary": "Origin, Accept-Encoding"
     };
 
     // 处理 OPTIONS 预检请求
@@ -187,7 +196,9 @@ async function handleRecord(request, env, url, corsHeaders) {
         headers: {
             "Content-Type": "application/json",
             ...corsHeaders,
-            "Cache-Control": "no-store" // 不缓存统计响应
+            "Cache-Control": "no-store, no-cache, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0"
         }
     });
 }
