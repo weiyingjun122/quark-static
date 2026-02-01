@@ -77,7 +77,8 @@ jobs:
           # fi
 
           # 创建搜索目录
-          mkdir -p search
+          ROOT_DIR=$(pwd)
+          mkdir -p "$ROOT_DIR/search"
 
           # 检查是否有统计信息
           # if [ ! -f static/status.json ] || [ ! -s static/status.json ]; then

@@ -12,6 +12,10 @@ from datetime import datetime
 from urllib.parse import quote
 
 # ==================== 配置 ====================
+# 获取当前脚本所在目录和项目根目录
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
+
 CONFIG = {
     "cloudflare": {
         "site_url": "https://search.weiyingjun.top",
@@ -19,10 +23,10 @@ CONFIG = {
         "timeout": 15
     },
     "local": {
-        "data_file": "data.json",
-        "output_dir": "search",
+        "data_file": os.path.join(PROJECT_ROOT, "data.json"),  # 修复路径
+        "output_dir": os.path.join(PROJECT_ROOT, "search"),    # 修复路径
         "min_count": 10,
-        "qrcode_dir": "static/qrcode"
+        "qrcode_dir": os.path.join(PROJECT_ROOT, "static/qrcode")  # 修复路径
     },
     "seo": {
         "site_name": "夸克网盘资源搜索",
@@ -642,6 +646,8 @@ def generate_index_page(generated_pages):
 </html>'''
     
     output_path = os.path.join(CONFIG['local']['output_dir'], "index.html")
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(index_content)
     
@@ -686,6 +692,18 @@ def main():
     print("🚀 SEO页面生成器 - 电脑只显示二维码版本")
     print("=" * 60)
     
+    # 打印调试信息
+    print(f"脚本目录: {SCRIPT_DIR}")
+    print(f"项目根目录: {PROJECT_ROOT}")
+    print(f"数据文件路径: {CONFIG['local']['data_file']}")
+    print(f"输出目录: {CONFIG['local']['output_dir']}")
+    
+    # 检查文件是否存在
+    if not os.path.exists(CONFIG['local']['data_file']):
+        print(f"❌ 数据文件不存在: {CONFIG['local']['data_file']}")
+        print(f"当前目录内容: {os.listdir(PROJECT_ROOT)}")
+        return
+    
     # 1. 获取统计
     print("\n1️⃣ 获取搜索统计...")
     stats = get_stats_from_api()
@@ -721,9 +739,8 @@ def main():
     print(f"\n3️⃣ 加载资源数据...")
     data_file = CONFIG['local']['data_file']
     
-    if not os.path.exists(data_file):
-        print(f"❌ {data_file} 不存在")
-        return
+    print(f"加载文件: {data_file}")
+    print(f"文件是否存在: {os.path.exists(data_file)}")
     
     try:
         with open(data_file, 'r', encoding='utf-8') as f:
@@ -732,12 +749,17 @@ def main():
         
     except Exception as e:
         print(f"❌ 加载失败: {e}")
+        print(f"错误详情: {e.__class__.__name__}: {str(e)}")
         return
     
     # 4. 生成页面
     print(f"\n4️⃣ 生成SEO页面...")
     output_dir = CONFIG['local']['output_dir']
+    print(f"输出目录: {output_dir}")
+    
+    # 确保输出目录存在
     os.makedirs(output_dir, exist_ok=True)
+    print(f"输出目录已创建: {os.path.exists(output_dir)}")
     
     generated_pages = []
     
