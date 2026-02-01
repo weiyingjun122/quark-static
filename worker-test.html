@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>手机统计测试</title>
+</head>
+<body>
+    <h1>手机统计测试</h1>
+    <button onclick="testRecord()">测试记录搜索</button>
+    <button onclick="testHot()">测试获取热搜</button>
+    <button onclick="testDebug()">测试调试接口</button>
+
+    <div id="result"></div>
+
+    <script>
+        const WORKER_URL = 'https://quark-search-api.weiyingjun122.workers.dev';
+
+        function log(msg) {
+            document.getElementById('result').innerHTML += `<div>${msg}</div>`;
+            console.log(msg);
+        }
+
+        function testRecord() {
+            const keyword = '手机测试_' + Date.now();
+            log(`📱 测试手机搜索: ${keyword}`);
+
+            fetch(`${WORKER_URL}/record?q=${encodeURIComponent(keyword)}`)
+                .then(r => r.json())
+                .then(data => log(`✅ 成功: ${JSON.stringify(data)}`))
+                .catch(e => log(`❌ 失败: ${e}`));
+        }
+
+        function testHot() {
+            log('🔥 获取热搜...');
+            fetch(`${WORKER_URL}/hot`)
+                .then(r => r.json())
+                .then(data => log(`✅ 热搜: ${JSON.stringify(data).slice(0, 200)}...`))
+                .catch(e => log(`❌ 失败: ${e}`));
+        }
+
+        function testDebug() {
+            log('🐛 调试接口...');
+            fetch(`${WORKER_URL}/debug`)
+                .then(r => r.json())
+                .then(data => {
+                    log(`✅ 总关键词: ${data.statsSummary?.totalKeywords}`);
+                    log(`✅ 总搜索次数: ${data.statsSummary?.totalSearches}`);
+                    log(`✅ 达到阈值: ${data.statsSummary?.keywordsAboveThreshold}`);
+                })
+                .catch(e => log(`❌ 失败: ${e}`));
+        }
+
+        // 页面加载时自动测试
+        window.onload = function() {
+            log(`设备: ${navigator.userAgent}`);
+            log(`是否为手机: ${/Mobi|Android|iPhone/i.test(navigator.userAgent) ? '是' : '否'}`);
+            log(`Worker URL: ${WORKER_URL}`);
+        };
+    </script>
+</body>
+</html>
