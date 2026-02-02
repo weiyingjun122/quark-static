@@ -287,33 +287,37 @@ async function diagnose400Error(keyword, apiPath, response, data) {
 async function loadHotKeywords() {
     const container = document.getElementById('recommend');
 
-    // ⚠️ 确保 data.json 已加载
-    if (!Array.isArray(localData) || localData.length === 0) {
-        container.innerHTML = '';
-        return;
-    }
-
     try {
+        // 1️⃣ 等待 data.json 加载完成（最多 2 秒）
+        let retry = 0;
+        while (localData.length === 0 && retry < 20) {
+            await new Promise(r => setTimeout(r, 100));
+            retry++;
+        }
+
+        if (localData.length === 0) {
+            container.innerHTML = '';
+            return;
+        }
+
+        // 2️⃣ 获取热搜榜
         const res = await fetch('/api/hot');
         const hotList = await res.json();
 
-        // 1️⃣ 构建资源匹配池
-        const resourcePool = localData.map(item => ({
-            title: (item.title || '').toLowerCase(),
-            keywords: (item.keywords || []).map(k => k.toLowerCase())
-        }));
-
-        // 2️⃣ 过滤热搜（次数 + 能命中资源）
+        // 3️⃣ 过滤热搜：次数 + 能命中资源
         const validHotList = hotList.filter(item => {
             if (item.count < 10) return false;
 
-            const word = item.word.toLowerCase();
+            const word = String(item.word || '').trim();
+            if (!word) return false;
 
-            return resourcePool.some(res =>
-                res.title.includes(word) ||
-                res.keywords.some(k =>
-                    k.includes(word) || word.includes(k)
-                )
+            return localData.some(res =>
+                // ✅ title 模糊匹配
+                String(res.title || '').includes(word) ||
+
+                // ✅ keywords 模糊匹配
+                Array.isArray(res.keywords) &&
+                res.keywords.some(k => String(k).includes(word))
             );
         });
 
@@ -322,7 +326,7 @@ async function loadHotKeywords() {
             return;
         }
 
-        // 3️⃣ 保留你原有的渲染代码
+        // 4️⃣ 渲染（完全保留你原有结构）
         let html = `<div class="recommend-card"><h3>🔥 全网实时热搜</h3>`;
 
         validHotList.forEach(item => {
@@ -331,17 +335,17 @@ async function loadHotKeywords() {
             const safeWord = item.word.replace(/'/g, "\\'");
 
             html += `<span class="hot-keyword ${isFire}"
-                        onclick="document.getElementById('searchInput').value='${safeWord}';
-                                 document.getElementById('searchBtn').click();">
-                        ${fireIcon}${item.word}
-                     </span>`;
+                onclick="document.getElementById('searchInput').value='${safeWord}';
+                         document.getElementById('searchBtn').click();">
+                ${fireIcon}${item.word}
+            </span>`;
         });
 
         html += '</div>';
         container.innerHTML = html;
 
     } catch (err) {
-        console.error('热搜榜加载失败', err);
+        console.error('热搜加载失败:', err);
         container.innerHTML = '';
     }
 }
