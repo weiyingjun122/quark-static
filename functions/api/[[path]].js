@@ -9,7 +9,7 @@ export async function onRequest(context) {
         return new Response('Not Found', { status: 404 });
     }
 
-    const action = pathSegments[1]; // record, hot, sync, debug, health
+    const action = pathSegments[1]; // record, hot, sync, debug, health, gap
 
     // CORS 配置
     // const corsHeaders = {
@@ -41,6 +41,8 @@ export async function onRequest(context) {
             return await handleHot(env, corsHeaders);
         case 'sync':
             return await handleSync(request, env, url, corsHeaders);
+        case 'gap':
+            return await handleGap(env, corsHeaders);
         case 'debug':
             return await handleDebug(request, env, corsHeaders);
         case 'health':
@@ -323,6 +325,99 @@ async function handleSync(request, env, url, corsHeaders) {
         });
     }
 }
+
+
+// ============================================================
+// 处理资源缺口榜 /api/gap
+// ============================================================
+async function handleGap(env, corsHeaders) {
+    try {
+        // 1️⃣ 读取搜索统计（和 hot 保持一致）
+        let stats = {};
+        try {
+            const statsData = await env.SEARCH_STATS.get("stats");
+            if (statsData) {
+                stats = JSON.parse(statsData);
+            }
+        } catch {
+            stats = {};
+        }
+
+        const THRESHOLD = 10;
+
+        // 2️⃣ 拉取 data.json（你的资源池）
+        let dataList = [];
+        try {
+            const dataRes = await fetch("https://search.weiyingjun.top/data.json");
+            dataList = await dataRes.json();
+        } catch (e) {
+            console.error("❌ data.json 加载失败", e);
+            dataList = [];
+        }
+
+        const gaps = [];
+
+        // 3️⃣ 遍历热搜词
+        Object.entries(stats).forEach(([word, count]) => {
+            if (count < THRESHOLD) return;
+
+            const keyword = word.trim();
+
+            // 是否命中任何资源
+            const matched = dataList.some(item => {
+                // title 模糊匹配
+                if (item.title && item.title.includes(keyword)) {
+                    return true;
+                }
+
+                // keywords 模糊匹配
+                if (Array.isArray(item.keywords)) {
+                    return item.keywords.some(k =>
+                    keyword.includes(k) || k.includes(keyword)
+                    );
+                }
+
+                return false;
+            });
+
+            // ❌ 没命中 → 资源缺口
+            if (!matched) {
+                gaps.push({
+                    word: keyword,
+                    count,
+                    level: getHotLevel(count),
+                          reason: "热度高但 data.json 暂无匹配资源",
+                          first_seen: new Date().toISOString().slice(0, 10)
+                });
+            }
+        });
+
+        // 4️⃣ 按热度排序
+        gaps.sort((a, b) => b.count - a.count);
+
+        return new Response(JSON.stringify(gaps, null, 2), {
+            headers: {
+                "Content-Type": "application/json; charset=utf-8",
+                "Cache-Control": "no-store",
+                ...corsHeaders
+            }
+        });
+
+    } catch (e) {
+        console.error("❌ handleGap error:", e);
+        return new Response(JSON.stringify({
+            error: "gap 接口生成失败",
+            message: e.message
+        }), {
+            status: 500,
+            headers: {
+                "Content-Type": "application/json",
+                ...corsHeaders
+            }
+        });
+    }
+}
+
 
 // 处理调试
 async function handleDebug(request, env, corsHeaders) {
