@@ -343,7 +343,7 @@ async function handleGap(env, corsHeaders) {
             stats = {};
         }
 
-        const THRESHOLD = 10;
+        const THRESHOLD = 2;
 
         // 2️⃣ 拉取 data.json（你的资源池）
         let dataList = [];
