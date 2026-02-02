@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>夸克网盘资源搜索 - 免费高速下载</title>
-<meta name="description" content="全网夸克网盘资源搜索，支持电脑/手机端，每日更新热搜榜，电影电视剧学习资料免费下。">
+<meta name="description" content="提供夸克网盘资源搜索服务，支持影视、课程、电子书、学习资料等关键词快速查找，无需注册，一键跳转夸克APP保存资源，方便高效。">
 <style>
 body { font-family: "Microsoft YaHei", Arial, sans-serif; background: #f5f5f5; display: flex; flex-direction: column; align-items: center; padding-top: 50px; margin:0; }
 
@@ -285,44 +285,64 @@ async function diagnose400Error(keyword, apiPath, response, data) {
 
 // 加载全网热搜榜 (从 Pages API 获取)
 async function loadHotKeywords() {
+    const container = document.getElementById('recommend');
+
+    // ⚠️ 确保 data.json 已加载
+    if (!Array.isArray(localData) || localData.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+
     try {
         const res = await fetch('/api/hot');
-
-        if (!res.ok) {
-            throw new Error(`API 返回错误: ${res.status}`);
-        }
-
         const hotList = await res.json();
 
-        if (!hotList || hotList.length === 0) {
-            // 如果没有热搜数据，显示默认提示
-            document.getElementById('recommend').innerHTML = '<div class="recommend-card"><h3>🔥 热门资源搜索</h3><span class="hot-keyword" onclick="document.getElementById(\'searchInput\').value=\'剧本杀\';document.getElementById(\'searchBtn\').click();">剧本杀</span></div>';
+        // 1️⃣ 构建资源匹配池
+        const resourcePool = localData.map(item => ({
+            title: (item.title || '').toLowerCase(),
+            keywords: (item.keywords || []).map(k => k.toLowerCase())
+        }));
+
+        // 2️⃣ 过滤热搜（次数 + 能命中资源）
+        const validHotList = hotList.filter(item => {
+            if (item.count < 10) return false;
+
+            const word = item.word.toLowerCase();
+
+            return resourcePool.some(res =>
+                res.title.includes(word) ||
+                res.keywords.some(k =>
+                    k.includes(word) || word.includes(k)
+                )
+            );
+        });
+
+        if (!validHotList.length) {
+            container.innerHTML = '';
             return;
         }
 
+        // 3️⃣ 保留你原有的渲染代码
         let html = `<div class="recommend-card"><h3>🔥 全网实时热搜</h3>`;
-        hotList.forEach(item => {
-            // 搜索次数 >= 10 次的标红显示
+
+        validHotList.forEach(item => {
             const isFire = item.count >= 10 ? 'hot-fire' : '';
             const fireIcon = item.count >= 10 ? '🔥' : '';
-
-            // 转义特殊字符，避免 XSS
             const safeWord = item.word.replace(/'/g, "\\'");
 
             html += `<span class="hot-keyword ${isFire}"
-                        onclick="document.getElementById('searchInput').value='${safeWord}'; document.getElementById('searchBtn').click();">
+                        onclick="document.getElementById('searchInput').value='${safeWord}';
+                                 document.getElementById('searchBtn').click();">
                         ${fireIcon}${item.word}
                      </span>`;
         });
+
         html += '</div>';
-        document.getElementById('recommend').innerHTML = html;
+        container.innerHTML = html;
 
-    } catch (e) {
-        console.warn("热搜加载失败:", e);
-        // 失败时显示静态推荐
-        //document.getElementById('recommend').innerHTML = '<div class="recommend-card"><h3>🔥 热门资源搜索</h3><span class="hot-keyword" onclick="document.getElementById(\'searchInput\').value=\'剧本杀\';document.getElementById(\'searchBtn\').click();">剧本杀</span><span class="hot-keyword" onclick="document.getElementById(\'searchInput\').value=\'考研资料\';document.getElementById(\'searchBtn\').click();">考研资料</span><span class="hot-keyword" onclick="document.getElementById(\'searchInput\').value=\'电影\';document.getElementById(\'searchBtn\').click();">电影</span></div>';
-
-        document.getElementById('recommend').innerHTML = '<div class="recommend-card"><h3>🔥 热门资源搜索</h3><span class="hot-keyword" onclick="document.getElementById(\'searchInput\').value=\'剧本杀\';document.getElementById(\'searchBtn\').click();">剧本杀</span></div>';
+    } catch (err) {
+        console.error('热搜榜加载失败', err);
+        container.innerHTML = '';
     }
 }
 
@@ -348,7 +368,7 @@ window.addEventListener('DOMContentLoaded', () => {
 </body>
 <!-- 在 <body> 标签后，现有页面内容外包裹一个容器 -->
 <body>
-    <div id="page-container" style="min-height: 60vh;"> <!-- 添加这一行和 style -->
+    <div id="page-container" style="min-height: 50vh;"> <!-- 添加这一行和 style -->
         <!-- 你现有的所有页面内容在这里，从“大白”标题到搜索框等 -->
     </div> <!-- 记得在页面主要内容结束后闭合这个div -->
     <!-- 添加到页面底部 -->
