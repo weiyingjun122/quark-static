@@ -897,7 +897,7 @@
   },
   {
     "id": "88",
-    "title": "人吃人",
+    "title": "人吃人 4-5人开放",
     "keywords": [
       "剧本杀"
     ],
@@ -932,5 +932,32 @@
     ],
     "share_link": "https://pan.quark.cn/s/95e2b562166b",
     "qrcode": "static/qrcode/91.png"
+  },
+  {
+    "id": "92",
+    "title": "红影 5-6人开放本",
+    "keywords": [
+      "剧本杀"
+    ],
+    "share_link": "https://pan.quark.cn/s/663e837c08ee",
+    "qrcode": "static/qrcode/92.png"
+  },
+  {
+    "id": "93",
+    "title": "诛心太平间 5-6人开放",
+    "keywords": [
+      "剧本杀"
+    ],
+    "share_link": "https://pan.quark.cn/s/e380547efdca",
+    "qrcode": "static/qrcode/93.png"
+  },
+  {
+    "id": "94",
+    "title": "办公室谋杀案 4-5人封闭",
+    "keywords": [
+      "剧本杀"
+    ],
+    "share_link": "https://pan.quark.cn/s/0c67d09fc0eb",
+    "qrcode": "static/qrcode/94.png"
   }
 ]
