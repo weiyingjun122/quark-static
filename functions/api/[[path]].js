@@ -348,7 +348,7 @@ async function handleGap(env, corsHeaders) {
         // 2️⃣ 拉取 data.json（你的资源池）
         let dataList = [];
         try {
-            const dataRes = await fetch("https://search.weiyingjun.top/data.json");
+            const dataRes = await fetch("https://www.weiyingjun.top/data.json");
             dataList = await dataRes.json();
         } catch (e) {
             console.error("❌ data.json 加载失败", e);

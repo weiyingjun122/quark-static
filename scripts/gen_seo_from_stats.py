@@ -18,7 +18,7 @@ PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 
 CONFIG = {
     "cloudflare": {
-        "site_url": "https://search.weiyingjun.top",
+        "site_url": "https://www.weiyingjun.top",
         "sync_key": "my_secret_sync_key",
         "timeout": 15
     },
@@ -30,7 +30,7 @@ CONFIG = {
     },
     "seo": {
         "site_name": "夸克网盘资源搜索",
-        "site_url": "https://search.weiyingjun.top",
+        "site_url": "https://www.weiyingjun.top",
         "max_resources": 20
     }
 }

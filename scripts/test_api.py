@@ -13,7 +13,7 @@ def test_api():
         ("/api/sync?key=my_secret_sync_key", "同步数据")
     ]
     
-    base_url = "https://search.weiyingjun.top"  # 你的域名
+    base_url = "https://www.weiyingjun.top"  # 你的域名
     
     for endpoint, description in endpoints:
         print(f"\n🔍 测试 {description} ({endpoint})")
@@ -39,7 +39,7 @@ def test_record_api():
     """测试记录搜索API"""
     print("\n📝 测试记录搜索API")
     
-    base_url = "https://search.weiyingjun.top"
+    base_url = "https://www.weiyingjun.top"
     
     # 测试GET方式
     print("1. GET方式测试:")
