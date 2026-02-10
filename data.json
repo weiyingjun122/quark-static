@@ -2246,5 +2246,23 @@
     ],
     "share_link": "https://pan.quark.cn/s/86bad56f21ba",
     "qrcode": "static/qrcode/237.png"
+  },
+  {
+    "id": "238",
+    "title": "雾起云浮",
+    "keywords": [
+      "剧本杀"
+    ],
+    "share_link": "https://pan.quark.cn/s/1ea4d15f4f5b",
+    "qrcode": "static/qrcode/238.png"
+  },
+  {
+    "id": "239",
+    "title": "银子那点事",
+    "keywords": [
+      "剧本杀"
+    ],
+    "share_link": "https://pan.quark.cn/s/0e90176f8d40",
+    "qrcode": "static/qrcode/239.png"
   }
 ]
