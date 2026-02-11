@@ -2340,5 +2340,23 @@
     ],
     "share_link": "https://pan.quark.cn/s/7ddddaa87f15",
     "qrcode": "static/qrcode/247.png"
+  },
+  {
+    "id": "248",
+    "title": "鲸鱼马戏团",
+    "keywords": [
+      "剧本杀"
+    ],
+    "share_link": "https://pan.quark.cn/s/f3770b1c1936",
+    "qrcode": "static/qrcode/248.png"
+  },
+  {
+    "id": "249",
+    "title": "山之神",
+    "keywords": [
+      "剧本杀"
+    ],
+    "share_link": "https://pan.quark.cn/s/11ed3ae4030e",
+    "qrcode": "static/qrcode/249.png"
   }
 ]
