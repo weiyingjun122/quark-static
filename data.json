@@ -2367,5 +2367,41 @@
     ],
     "share_link": "https://pan.quark.cn/s/4160afceb5eb",
     "qrcode": "static/qrcode/250.png"
+  },
+  {
+    "id": "251",
+    "title": "娘娘千岁",
+    "keywords": [
+      "剧本杀"
+    ],
+    "share_link": "https://pan.quark.cn/s/e90a30387e8a",
+    "qrcode": "static/qrcode/251.png"
+  },
+  {
+    "id": "252",
+    "title": "校规2返校 开放6人",
+    "keywords": [
+      "剧本杀"
+    ],
+    "share_link": "https://pan.quark.cn/s/6f57d9c810ee",
+    "qrcode": "static/qrcode/252.png"
+  },
+  {
+    "id": "253",
+    "title": "海龟浓汤",
+    "keywords": [
+      "剧本杀"
+    ],
+    "share_link": "https://pan.quark.cn/s/4dbc36c2466e",
+    "qrcode": "static/qrcode/253.png"
+  },
+  {
+    "id": "254",
+    "title": "猫岛谋杀循环",
+    "keywords": [
+      "剧本杀"
+    ],
+    "share_link": "https://pan.quark.cn/s/0b14d6a09434",
+    "qrcode": "static/qrcode/254.png"
   }
 ]
