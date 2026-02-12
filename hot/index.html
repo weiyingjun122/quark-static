@@ -78,12 +78,19 @@ h1 {
   ⚠️ 说明：
   1. 这里仍然使用 localStorage（单用户）
   2. 后面升级 Worker 时，这里只换数据源
-*/
+  3. 可以配置 FILTER_KEYWORDS 来过滤不需要展示的关键词
+ */
+
+const FILTER_KEYWORDS = [
+    // 在这里添加需要过滤的关键词
+    // 例如：'敏感词', '广告', '不需要的关键词'
+];
 
 function getHotList(limit = 50) {
     try {
         const map = JSON.parse(localStorage.getItem('search_keywords')) || {};
         return Object.entries(map)
+            .filter(([kw]) => !FILTER_KEYWORDS.includes(kw))
             .sort((a, b) => b[1].count - a[1].count)
             .slice(0, limit);
     } catch {

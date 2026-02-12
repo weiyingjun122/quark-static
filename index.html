@@ -283,6 +283,13 @@ async function diagnose400Error(keyword, apiPath, response, data) {
     }
 }
 
+// 热搜关键词过滤配置
+const FILTER_KEYWORDS = [
+    // 在这里添加需要过滤的关键词
+    // 例如：'敏感词', '广告', '不需要展示的关键词'
+    '剧本'
+];
+
 // 加载全网热搜榜 (从 Pages API 获取)
 async function loadHotKeywords(retryCount = 0) {
     const container = document.getElementById('recommend');
@@ -320,12 +327,14 @@ async function loadHotKeywords(retryCount = 0) {
             
             const hotList = await res.json();
             
-            // 3️⃣ 过滤热搜：次数 + 能命中资源
+            // 3️⃣ 过滤热搜：次数 + 能命中资源 + 过滤指定关键词
             const validHotList = hotList.filter(item => {
                 if (item.count < 10) return false;
 
                 const word = String(item.word || '').trim();
                 if (!word) return false;
+
+                if (FILTER_KEYWORDS.includes(word)) return false;
 
                 return localData.some(res =>
                     String(res.title || '').includes(word) ||
