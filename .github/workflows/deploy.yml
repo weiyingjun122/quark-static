@@ -26,6 +26,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           persist-credentials: false
+          fetch-depth: 0  # 获取完整历史，方便推送
 
       # 2️⃣ 设置 Python
       - name: Set up Python
@@ -110,6 +111,13 @@ jobs:
             # 配置 git
             git config --global user.name "github-actions[bot]"
             git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+            # 配置远程仓库 URL（使用 PAT 进行认证）
+            REPO_URL="https://x-access-token:${GH_PAT}@github.com/weiyingjun122/quark-static.git"
+            git remote set-url origin $REPO_URL
+
+            # 获取最新状态
+            git fetch origin main
 
             # 只添加实际存在的文件
             git add data.json 2>/dev/null || true
