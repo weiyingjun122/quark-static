@@ -62,6 +62,7 @@ jobs:
         run: |
           cd scripts
           python build_resources.py
+          cd ..
 
       # 6️⃣ 生成 SEO stats.json
       - name: Generate SEO Pages
@@ -89,6 +90,7 @@ jobs:
           # 运行 SEO 页面生成器
           cd scripts
           python gen_seo_from_stats.py
+          cd ..
 
           # 检查生成结果
           echo "✅ SEO 页面生成完成"
@@ -112,11 +114,11 @@ jobs:
             git config --global user.name "github-actions[bot]"
             git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-            # 配置远程仓库 URL（使用 PAT 进行认证）
-            git remote set-url origin "https://x-access-token:${GH_PAT}@github.com/weiyingjun122/quark-static.git"
-
-            # 获取最新状态
-            git fetch origin main
+            # # 配置远程仓库 URL（使用 PAT 进行认证）
+            # git remote set-url origin "https://x-access-token:${GH_PAT}@github.com/weiyingjun122/quark-static.git"
+            #
+            # # 获取最新状态
+            # git fetch origin main
 
             # 只添加实际存在的文件
             git add data.json 2>/dev/null || true
@@ -125,14 +127,22 @@ jobs:
             git add search/ 2>/dev/null || true
 
             # 检查是否有变更
+            # if ! git diff --cached --quiet; then
+            #     echo "有变更，提交并推送..."
+            #     git commit -m "自动生成: SEO页面和资源文件 - $(date '+%Y-%m-%d %H:%M:%S')"
+            #     git push https://$GH_PAT@github.com/weiyingjun122/quark-static.git main
+            # else
+            #     echo "没有变更，创建空提交..."
+            #     git commit --allow-empty -m "空提交触发部署 - $(date '+%Y-%m-%d %H:%M:%S')"
+            #     git push https://$GH_PAT@github.com/weiyingjun122/quark-static.git main
+            # fi
+
             if ! git diff --cached --quiet; then
                 echo "有变更，提交并推送..."
                 git commit -m "自动生成: SEO页面和资源文件 - $(date '+%Y-%m-%d %H:%M:%S')"
-                git push https://$GH_PAT@github.com/weiyingjun122/quark-static.git main
+                git push
             else
-                echo "没有变更，创建空提交..."
-                git commit --allow-empty -m "空提交触发部署 - $(date '+%Y-%m-%d %H:%M:%S')"
-                git push https://$GH_PAT@github.com/weiyingjun122/quark-static.git main
+                echo "没有变更"
             fi
 
 
