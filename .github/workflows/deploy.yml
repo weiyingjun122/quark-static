@@ -16,6 +16,9 @@ on:
         required: false
         default: '手动运行部署'
 
+permissions:
+  contents: write
+
 jobs:
   build-deploy:
     runs-on: ubuntu-latest
@@ -25,7 +28,7 @@ jobs:
       - name: Checkout Repo
         uses: actions/checkout@v3
         with:
-          persist-credentials: false
+          # persist-credentials: false
           fetch-depth: 0  # 获取完整历史，方便推送
 
       # 2️⃣ 设置 Python
