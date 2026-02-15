@@ -2466,5 +2466,23 @@
     ],
     "share_link": "https://pan.quark.cn/s/de5789df34f2",
     "qrcode": "static/qrcode/261.png"
+  },
+  {
+    "id": "262",
+    "title": "群星落幕时",
+    "keywords": [
+      "剧本杀"
+    ],
+    "share_link": "https://pan.quark.cn/s/ba02f7bd6ee5",
+    "qrcode": "static/qrcode/262.png"
+  },
+  {
+    "id": "263",
+    "title": "隔墙有眼",
+    "keywords": [
+      "剧本杀"
+    ],
+    "share_link": "https://pan.quark.cn/s/0330b3122066",
+    "qrcode": "static/qrcode/263.png"
   }
 ]
