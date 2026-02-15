@@ -113,8 +113,7 @@ jobs:
             git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
             # 配置远程仓库 URL（使用 PAT 进行认证）
-            REPO_URL="https://x-access-token:${GH_PAT}@github.com/weiyingjun122/quark-static.git"
-            git remote set-url origin $REPO_URL
+            git remote set-url origin "https://x-access-token:${GH_PAT}@github.com/weiyingjun122/quark-static.git"
 
             # 获取最新状态
             git fetch origin main
