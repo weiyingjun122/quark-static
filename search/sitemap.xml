@@ -76,12 +76,22 @@
         <priority>0.7</priority>
     </url>
     <url>
+        <loc>https://www.weiyingjun.top/search/阿姐鼓.html</loc>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    <url>
         <loc>https://www.weiyingjun.top/search/消失的学号.html</loc>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
     </url>
     <url>
-        <loc>https://www.weiyingjun.top/search/阿姐鼓.html</loc>
+        <loc>https://www.weiyingjun.top/search/桔梗物语.html</loc>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    <url>
+        <loc>https://www.weiyingjun.top/search/奇幻沼泽.html</loc>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
     </url>
@@ -91,7 +101,12 @@
         <priority>0.7</priority>
     </url>
     <url>
-        <loc>https://www.weiyingjun.top/search/桔梗物语.html</loc>
+        <loc>https://www.weiyingjun.top/search/不能说的秘密.html</loc>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    <url>
+        <loc>https://www.weiyingjun.top/search/躲猫猫.html</loc>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
     </url>
