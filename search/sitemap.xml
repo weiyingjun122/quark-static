@@ -81,6 +81,11 @@
         <priority>0.7</priority>
     </url>
     <url>
+        <loc>https://www.weiyingjun.top/search/马丁内斯死在惊奇馆.html</loc>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    <url>
         <loc>https://www.weiyingjun.top/search/阿姐鼓.html</loc>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
@@ -92,11 +97,6 @@
     </url>
     <url>
         <loc>https://www.weiyingjun.top/search/奇幻沼泽.html</loc>
-        <changefreq>weekly</changefreq>
-        <priority>0.7</priority>
-    </url>
-    <url>
-        <loc>https://www.weiyingjun.top/search/马丁内斯死在惊奇馆.html</loc>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
     </url>
