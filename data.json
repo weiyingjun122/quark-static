@@ -2529,5 +2529,23 @@
     ],
     "share_link": "https://pan.quark.cn/s/5fd668fc89c5",
     "qrcode": "static/qrcode/268.png"
+  },
+  {
+    "id": "269",
+    "title": "不要回答",
+    "keywords": [
+      "剧本杀"
+    ],
+    "share_link": "https://pan.quark.cn/s/c04cbc664ff3",
+    "qrcode": "static/qrcode/269.png"
+  },
+  {
+    "id": "270",
+    "title": "黑色星期五",
+    "keywords": [
+      "剧本杀"
+    ],
+    "share_link": "https://pan.quark.cn/s/717e7a680862",
+    "qrcode": "static/qrcode/270.png"
   }
 ]
