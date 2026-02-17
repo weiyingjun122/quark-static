@@ -49,8 +49,6 @@ export async function onRequest(context) {
             return await handleHealth(corsHeaders);
         case 'ping':
             return await handlePing(corsHeaders);
-        case 'request':
-            return await handleRequest(request, env, url, corsHeaders);
         default:
             return new Response(JSON.stringify({
                 error: "Endpoint not found",
@@ -491,113 +489,6 @@ async function handlePing(corsHeaders) {
     });
 }
 
-// ============================================================
-// 处理 /api/request 请求
-// ============================================================
-async function handleRequest(request, env, url, corsHeaders) {
-    let keyword = "";
-
-    if (request.method === "GET") {
-        keyword = (url.searchParams.get("keyword") || url.searchParams.get("q") || "").trim();
-    }
-
-    if (request.method === "POST") {
-        try {
-            const contentType = request.headers.get("content-type") || "";
-            if (contentType.includes("application/json")) {
-                const body = await request.json();
-                keyword = (body.keyword || body.q || "").trim();
-            } else if (contentType.includes("application/x-www-form-urlencoded")) {
-                const formData = await request.formData();
-                keyword = (formData.get("keyword") || formData.get("q") || "").trim();
-            } else {
-                const text = await request.text();
-                keyword = text.trim();
-            }
-        } catch (err) {
-            return new Response(JSON.stringify({
-                success: false,
-                error: "Invalid JSON body",
-                message: "请使用 GET 或 POST 发送合法 JSON，例如 {\"keyword\":\"开心鬼\"}"
-            }), {
-                status: 400,
-                headers: { "Content-Type": "application/json", ...corsHeaders }
-            });
-        }
-    }
-
-    if (!keyword) {
-        return new Response(JSON.stringify({
-            success: false,
-            error: "关键词不能为空",
-            usage: {
-                GET: "/api/request?keyword=开心鬼",
-                POST: '{"keyword":"开心鬼"}'
-            }
-        }), {
-            status: 400,
-            headers: { "Content-Type": "application/json", ...corsHeaders }
-        });
-    }
-
-    const issueTitle = `求资源：${keyword}`;
-
-    try {
-        // 查询现有 Issue
-        const searchRes = await fetch(
-            `https://api.github.com/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/issues?state=open&per_page=100`,
-            {
-                headers: {
-                    Authorization: `Bearer ${env.GITHUB_TOKEN}`,
-                    Accept: "application/vnd.github+json"
-                }
-            }
-        );
-
-        const issues = await searchRes.json();
-        const existing = issues.find(i => i.title === issueTitle);
-
-        if (existing) {
-            await fetch(existing.comments_url, {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${env.GITHUB_TOKEN}`,
-                    Accept: "application/vnd.github+json"
-                },
-                body: JSON.stringify({ body: "👍 又有一位用户求此资源" })
-            });
-
-            return new Response(JSON.stringify({ success: true, message: "已增加热度" }), {
-                headers: { "Content-Type": "application/json", ...corsHeaders }
-            });
-        }
-
-        await fetch(
-            `https://api.github.com/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/issues`,
-            {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${env.GITHUB_TOKEN}`,
-                    Accept: "application/vnd.github+json"
-                },
-                body: JSON.stringify({
-                    title: issueTitle,
-                    body: `用户求资源关键词：${keyword}`
-                })
-            }
-        );
-
-        return new Response(JSON.stringify({ success: true, message: "提交成功" }), {
-            headers: { "Content-Type": "application/json", ...corsHeaders }
-        });
-
-    } catch (err) {
-        return new Response(JSON.stringify({ success: false, error: err.message }), {
-            status: 500,
-            headers: { "Content-Type": "application/json", ...corsHeaders }
-        });
-    }
-}
 
 
 
