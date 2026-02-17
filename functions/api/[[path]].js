@@ -50,7 +50,7 @@ export async function onRequest(context) {
         case 'ping':
             return await handlePing(corsHeaders);
         case 'request':
-            return await onRequestPost(context);
+            return await handleRequest(request, env, url, corsHeaders);
         default:
             return new Response(JSON.stringify({
                 error: "Endpoint not found",
@@ -491,21 +491,62 @@ async function handlePing(corsHeaders) {
     });
 }
 
-export async function onRequestPost(context) {
-    try {
-        const { request, env } = context;
-        const body = await request.json();
-        const keyword = body.keyword?.trim();
+// ============================================================
+// 处理 /api/request 请求
+// ============================================================
+async function handleRequest(request, env, url, corsHeaders) {
+    let keyword = "";
 
-        if (!keyword) {
-            return new Response(JSON.stringify({ error: "关键词不能为空" }), {
+    // 支持 GET 查询参数
+    if (request.method === "GET") {
+        keyword = url.searchParams.get("keyword") || url.searchParams.get("q") || "";
+        keyword = keyword.trim();
+    }
+
+    // 支持 POST JSON 或表单
+    if (request.method === "POST") {
+        try {
+            const contentType = request.headers.get("content-type") || "";
+
+            if (contentType.includes("application/json")) {
+                const body = await request.json();
+                keyword = (body.keyword || body.q || "").trim();
+            } else if (contentType.includes("application/x-www-form-urlencoded")) {
+                const formData = await request.formData();
+                keyword = (formData.get("keyword") || formData.get("q") || "").trim();
+            } else {
+                // 纯文本或其他类型
+                const text = await request.text();
+                keyword = text.trim();
+            }
+        } catch (err) {
+            return new Response(JSON.stringify({
+                error: "Invalid JSON body",
+                message: "请使用 GET 或 POST 发送合法请求，例如 {\"keyword\":\"电影\"} 或 keyword=电影"
+            }), {
                 status: 400,
-                headers: { "Content-Type": "application/json" }
+                headers: { "Content-Type": "application/json", ...corsHeaders }
             });
         }
+    }
 
-        const issueTitle = `求资源：${keyword}`;
+    // 检查关键词
+    if (!keyword) {
+        return new Response(JSON.stringify({
+            error: "关键词不能为空",
+            usage: {
+                GET: "/api/request?keyword=电影",
+                POST: '{"keyword":"电影"}'
+            }
+        }), {
+            status: 400,
+            headers: { "Content-Type": "application/json", ...corsHeaders }
+        });
+    }
 
+    const issueTitle = `求资源：${keyword}`;
+
+    try {
         // 查询现有 Issue
         const searchRes = await fetch(
             `https://api.github.com/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/issues?state=open&per_page=100`,
@@ -533,10 +574,11 @@ export async function onRequestPost(context) {
             });
 
             return new Response(JSON.stringify({ message: "已增加热度" }), {
-                headers: { "Content-Type": "application/json" }
+                headers: { "Content-Type": "application/json", ...corsHeaders }
             });
         }
 
+        // 新建 Issue
         await fetch(
             `https://api.github.com/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/issues`,
             {
@@ -553,16 +595,17 @@ export async function onRequestPost(context) {
         );
 
         return new Response(JSON.stringify({ message: "提交成功" }), {
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json", ...corsHeaders }
         });
 
     } catch (err) {
         return new Response(JSON.stringify({ error: err.message }), {
             status: 500,
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json", ...corsHeaders }
         });
     }
 }
+
 
 // 辅助函数
 function getHotLevel(count) {
