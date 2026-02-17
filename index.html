@@ -236,10 +236,24 @@ async function performSearch(keyword) {
         }
     } else {
         // 未找到资源
-        html = `<h3>⚠️ 暂未收录该资源</h3>
+        html = /*`<h3>⚠️ 暂未收录该资源</h3>
                 <p>关键词：<strong>${keyword}</strong></p>
                 <p>请尝试精简关键词，或扫码加入资源群求资源</p>
-                <img src="static/wechat_qrcode.png" style="width:350px;height:350px;">`;
+                <img src="static/wechat_qrcode.png" style="width:350px;height:350px;">`;*/
+               `
+                <h3>⚠️ 暂未收录该资源</h3>
+                <p>关键词：<strong>${keyword}</strong></p>
+                <p>可以提交求资源，我们会优先补充热门内容</p>
+
+                <button onclick="submitRequest('${keyword}')"
+                    style="margin-top:12px;padding:10px 22px;border-radius:6px;border:none;background:#1e90ff;color:#fff;cursor:pointer;font-size:14px;">
+                    🚀 求资源
+                </button>
+
+                <div style="margin-top:20px;">
+                    <img src="static/wechat_qrcode.png" style="width:280px;height:280px;">
+                </div>
+                `;
     }
 
     modalBody.innerHTML = html;
@@ -402,18 +416,54 @@ window.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => performSearch(q), 200);
     }
 });
+
+// ===============================
+// 🚀 求资源提交
+// ===============================
+async function submitRequest(keyword) {
+    if (!keyword || !keyword.trim()) {
+        alert("关键词不能为空");
+        return;
+    }
+
+    try {
+        const res = await fetch("/api/request", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ keyword })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            alert("提交成功，我们会优先补充该资源 🙌");
+        } else {
+            alert(data.error || "提交失败");
+        }
+
+    } catch (err) {
+        console.error("提交失败:", err);
+        alert("网络异常，请稍后再试");
+    }
+}
+
+
 </script>
-</body>
-<!-- 在 <body> 标签后，现有页面内容外包裹一个容器 -->
-<body>
-    <div id="page-container" style="min-height: 50vh;"> <!-- 添加这一行和 style -->
-        <!-- 你现有的所有页面内容在这里，从“大白”标题到搜索框等 -->
-    </div> <!-- 记得在页面主要内容结束后闭合这个div -->
-    <!-- 添加到页面底部 -->
+    <!--<div id="page-container" style="min-height: 50vh;">
+    </div>
     <div class="site-disclaimer">
     <h4>温馨提示</h4>
     <p>您在此获取的资源源于网络分享，旨在方便学习交流。请尊重知识产权，合理使用，支持正版。请勿将资源用于商业或违规用途</p>
     <p>感谢您的理解与配合！</p>
+    </div>-->
+
+    <!-- 页面底部免责声明 -->
+    <div class="site-disclaimer">
+        <h4>温馨提示</h4>
+        <p>您在此获取的资源源于网络分享，旨在方便学习交流。请尊重知识产权，合理使用，支持正版。请勿将资源用于商业或违规用途</p>
+        <p>感谢您的理解与配合！</p>
     </div>
 </body>
 </html>
