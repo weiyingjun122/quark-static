@@ -241,17 +241,21 @@ async function performSearch(keyword) {
                 <p>请尝试精简关键词，或扫码加入资源群求资源</p>
                 <img src="static/wechat_qrcode.png" style="width:350px;height:350px;">`;*/
                `
-                <h3>⚠️ 暂未收录该资源</h3>
-                <p>关键词：<strong>${keyword}</strong></p>
-                <p>可以提交求资源，我们会优先补充热门内容</p>
+                <div id="resourceBox">
+                    <h3>⚠️ 暂未收录该资源</h3>
+                    <p>关键词：<strong id="keywordText">${keyword}</strong></p>
+                    <p>可以提交求资源，我们会优先补充热门内容</p>
 
-                <button onclick="submitRequest('${keyword}')"
-                    style="margin-top:12px;padding:10px 22px;border-radius:6px;border:none;background:#1e90ff;color:#fff;cursor:pointer;font-size:14px;">
-                    🚀 求资源
-                </button>
+                    <button id="submitBtn"
+                        style="margin-top:12px;padding:10px 22px;border-radius:6px;border:none;background:#1e90ff;color:#fff;cursor:pointer;font-size:14px;">
+                        🚀 求资源
+                    </button>
 
-                <div style="margin-top:20px;">
-                    <img src="static/wechat_qrcode.png" style="width:280px;height:280px;">
+                    <div id="statusMessage" style="margin-top:10px;color:#333;font-size:14px;"></div>
+
+                    <div style="margin-top:20px;">
+                        <img src="static/wechat_qrcode.png" style="width:280px;height:280px;">
+                    </div>
                 </div>
                 `;
     }
@@ -420,11 +424,48 @@ window.addEventListener('DOMContentLoaded', () => {
 // ===============================
 // 🚀 求资源提交
 // ===============================
-async function submitRequest(keyword) {
+// async function submitRequest(keyword) {
+//     if (!keyword || !keyword.trim()) {
+//         alert("关键词不能为空");
+//         return;
+//     }
+//
+//     try {
+//         const res = await fetch("/api/request", {
+//             method: "POST",
+//             headers: {
+//                 "Content-Type": "application/json"
+//             },
+//             body: JSON.stringify({ keyword })
+//         });
+//
+//         const data = await res.json();
+//
+//         if (res.ok) {
+//             alert("提交成功，我们会优先补充该资源 🙌");
+//         } else {
+//             alert(data.error || "提交失败");
+//         }
+//
+//     } catch (err) {
+//         console.error("提交失败:", err);
+//         alert("网络异常，请稍后再试");
+//     }
+// }
+
+const submitBtn = document.getElementById("submitBtn");
+const statusMessage = document.getElementById("statusMessage");
+const keyword = document.getElementById("keywordText").textContent;
+
+submitBtn.addEventListener("click", async () => {
     if (!keyword || !keyword.trim()) {
-        alert("关键词不能为空");
+        statusMessage.textContent = "关键词不能为空";
         return;
     }
+
+    submitBtn.disabled = true;
+    submitBtn.style.background = "#999";
+    statusMessage.textContent = "提交中，请稍候...";
 
     try {
         const res = await fetch("/api/request", {
@@ -435,19 +476,33 @@ async function submitRequest(keyword) {
             body: JSON.stringify({ keyword })
         });
 
-        const data = await res.json();
+        let data = {};
+        try {
+            data = await res.json(); // 尝试解析 JSON
+        } catch (e) {
+            console.error("JSON 解析失败:", e);
+            statusMessage.textContent = "接口返回异常，请稍后再试";
+            submitBtn.disabled = false;
+            submitBtn.style.background = "#1e90ff";
+            return;
+        }
 
-        if (res.ok) {
-            alert("提交成功，我们会优先补充该资源 🙌");
+        if (res.ok && data.success) {
+            statusMessage.textContent = data.message || "提交成功，我们会优先补充该资源 🙌";
+            submitBtn.textContent = "✅ 已提交";
         } else {
-            alert(data.error || "提交失败");
+            statusMessage.textContent = data.error || data.message || `提交失败 (HTTP ${res.status})`;
+            submitBtn.disabled = false;
+            submitBtn.style.background = "#1e90ff";
         }
 
     } catch (err) {
         console.error("提交失败:", err);
-        alert("网络异常，请稍后再试");
+        statusMessage.textContent = "网络异常，请稍后再试";
+        submitBtn.disabled = false;
+        submitBtn.style.background = "#1e90ff";
     }
-}
+});
 
 
 </script>

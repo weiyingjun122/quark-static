@@ -497,17 +497,13 @@ async function handlePing(corsHeaders) {
 async function handleRequest(request, env, url, corsHeaders) {
     let keyword = "";
 
-    // 支持 GET 查询参数
     if (request.method === "GET") {
-        keyword = url.searchParams.get("keyword") || url.searchParams.get("q") || "";
-        keyword = keyword.trim();
+        keyword = (url.searchParams.get("keyword") || url.searchParams.get("q") || "").trim();
     }
 
-    // 支持 POST JSON 或表单
     if (request.method === "POST") {
         try {
             const contentType = request.headers.get("content-type") || "";
-
             if (contentType.includes("application/json")) {
                 const body = await request.json();
                 keyword = (body.keyword || body.q || "").trim();
@@ -515,14 +511,14 @@ async function handleRequest(request, env, url, corsHeaders) {
                 const formData = await request.formData();
                 keyword = (formData.get("keyword") || formData.get("q") || "").trim();
             } else {
-                // 纯文本或其他类型
                 const text = await request.text();
                 keyword = text.trim();
             }
         } catch (err) {
             return new Response(JSON.stringify({
+                success: false,
                 error: "Invalid JSON body",
-                message: "请使用 GET 或 POST 发送合法请求，例如 {\"keyword\":\"电影\"} 或 keyword=电影"
+                message: "请使用 GET 或 POST 发送合法 JSON，例如 {\"keyword\":\"开心鬼\"}"
             }), {
                 status: 400,
                 headers: { "Content-Type": "application/json", ...corsHeaders }
@@ -530,13 +526,13 @@ async function handleRequest(request, env, url, corsHeaders) {
         }
     }
 
-    // 检查关键词
     if (!keyword) {
         return new Response(JSON.stringify({
+            success: false,
             error: "关键词不能为空",
             usage: {
-                GET: "/api/request?keyword=电影",
-                POST: '{"keyword":"电影"}'
+                GET: "/api/request?keyword=开心鬼",
+                POST: '{"keyword":"开心鬼"}'
             }
         }), {
             status: 400,
@@ -568,17 +564,14 @@ async function handleRequest(request, env, url, corsHeaders) {
                     Authorization: `Bearer ${env.GITHUB_TOKEN}`,
                     Accept: "application/vnd.github+json"
                 },
-                body: JSON.stringify({
-                    body: "👍 又有一位用户求此资源"
-                })
+                body: JSON.stringify({ body: "👍 又有一位用户求此资源" })
             });
 
-            return new Response(JSON.stringify({ message: "已增加热度" }), {
+            return new Response(JSON.stringify({ success: true, message: "已增加热度" }), {
                 headers: { "Content-Type": "application/json", ...corsHeaders }
             });
         }
 
-        // 新建 Issue
         await fetch(
             `https://api.github.com/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/issues`,
             {
@@ -594,17 +587,18 @@ async function handleRequest(request, env, url, corsHeaders) {
             }
         );
 
-        return new Response(JSON.stringify({ message: "提交成功" }), {
+        return new Response(JSON.stringify({ success: true, message: "提交成功" }), {
             headers: { "Content-Type": "application/json", ...corsHeaders }
         });
 
     } catch (err) {
-        return new Response(JSON.stringify({ error: err.message }), {
+        return new Response(JSON.stringify({ success: false, error: err.message }), {
             status: 500,
             headers: { "Content-Type": "application/json", ...corsHeaders }
         });
     }
 }
+
 
 
 // 辅助函数
