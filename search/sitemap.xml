@@ -16,12 +16,12 @@
         <priority>0.7</priority>
     </url>
     <url>
-        <loc>https://www.weiyingjun.top/search/一点半.html</loc>
+        <loc>https://www.weiyingjun.top/search/抓小三.html</loc>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
     </url>
     <url>
-        <loc>https://www.weiyingjun.top/search/抓小三.html</loc>
+        <loc>https://www.weiyingjun.top/search/一点半.html</loc>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
     </url>
@@ -91,12 +91,12 @@
         <priority>0.7</priority>
     </url>
     <url>
-        <loc>https://www.weiyingjun.top/search/奇幻沼泽.html</loc>
+        <loc>https://www.weiyingjun.top/search/桔梗物语.html</loc>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
     </url>
     <url>
-        <loc>https://www.weiyingjun.top/search/桔梗物语.html</loc>
+        <loc>https://www.weiyingjun.top/search/奇幻沼泽.html</loc>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
     </url>
@@ -117,6 +117,11 @@
     </url>
     <url>
         <loc>https://www.weiyingjun.top/search/不要回答.html</loc>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    <url>
+        <loc>https://www.weiyingjun.top/search/窥镜.html</loc>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
     </url>
