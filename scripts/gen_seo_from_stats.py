@@ -771,7 +771,14 @@ def main():
         keyword_lower = keyword.lower()
         
         for resource in resources:
-            # 检查title
+            # 如果有 search_aliases，用别名匹配
+            search_aliases = resource.get('search_aliases', [])
+            if isinstance(search_aliases, list) and search_aliases:
+                if any(keyword_lower in str(alias).lower() for alias in search_aliases):
+                    matched_resources.append(resource)
+                    continue
+            
+            # 没有别名时，用 title 匹配
             title = resource.get('title', '').lower()
             if keyword_lower in title:
                 matched_resources.append(resource)
@@ -782,9 +789,11 @@ def main():
             if isinstance(keywords, list):
                 if any(keyword_lower in str(k).lower() for k in keywords):
                     matched_resources.append(resource)
+                    continue
             elif isinstance(keywords, str):
                 if keyword_lower in keywords.lower():
                     matched_resources.append(resource)
+                    continue
         
         if not matched_resources:
             print(f"    ⚠️  未找到相关资源，跳过")

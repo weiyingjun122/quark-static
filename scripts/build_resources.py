@@ -2,6 +2,7 @@ import pandas as pd
 import qrcode
 import json
 import os
+import openpyxl
 
 # 文件路径
 xlsx_file = "../resources.xlsx"  # 根据你的目录调整
@@ -11,15 +12,19 @@ qrcode_dir = "../static/qrcode"
 # 创建二维码目录
 os.makedirs(qrcode_dir, exist_ok=True)
 
-# 读取 Excel
-df = pd.read_excel(xlsx_file)
+# 使用 pandas 读取 Excel（更快）
+df = pd.read_excel(xlsx_file, engine='openpyxl')
 
 data = []
 for idx, row in df.iterrows():
-    item_id = str(row.get("id", idx+1))
-    title = str(row.get("title", ""))
-    keywords = str(row.get("keywords", "")).split(",")  # 假设关键词逗号分隔
-    share_link = str(row.get("share_link", ""))
+    item_id = str(row.get("id", idx + 1) or idx + 1)
+    title = str(row.get("title", "") or "")
+    keywords_str = str(row.get("keywords", "") or "")
+    search_aliases_str = str(row.get("search_aliases", "") or "")
+    share_link = str(row.get("share_link", "") or "")
+
+    keywords = [k.strip() for k in keywords_str.split(",") if k.strip()]
+    search_aliases = [alias.strip() for alias in search_aliases_str.split(",") if alias.strip()]
 
     # 生成二维码
     qr_path = os.path.join(qrcode_dir, f"{item_id}.png")
@@ -30,6 +35,7 @@ for idx, row in df.iterrows():
         "id": item_id,
         "title": title,
         "keywords": keywords,
+        "search_aliases": search_aliases,
         "share_link": share_link,
         "qrcode": f"static/qrcode/{item_id}.png"
     })
@@ -38,4 +44,4 @@ for idx, row in df.iterrows():
 with open(output_json, "w", encoding="utf-8") as f:
     json.dump(data, f, ensure_ascii=False, indent=2)
 
-print("✅ data.json & QR codes 已生成")
+print("data.json & QR codes generated")
