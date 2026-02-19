@@ -365,7 +365,7 @@ async function handleGap(env, corsHeaders) {
 
             // 是否命中任何资源
             const matched = dataList.some(item => {
-                // 如果有 search_aliases，用别名匹配
+                // 如果有 search_aliases，用别名匹配（双向匹配）
                 if (Array.isArray(item.search_aliases) && item.search_aliases.length > 0) {
                     return item.search_aliases.some(alias =>
                         keyword.includes(alias) || alias.includes(keyword)

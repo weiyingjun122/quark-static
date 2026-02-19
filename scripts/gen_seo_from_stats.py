@@ -771,10 +771,10 @@ def main():
         keyword_lower = keyword.lower()
         
         for resource in resources:
-            # 如果有 search_aliases，用别名匹配
+            # 如果有 search_aliases，用别名匹配（双向匹配）
             search_aliases = resource.get('search_aliases', [])
             if isinstance(search_aliases, list) and search_aliases:
-                if any(keyword_lower in str(alias).lower() for alias in search_aliases):
+                if any(keyword_lower in str(alias).lower() or str(alias).lower() in keyword_lower for alias in search_aliases):
                     matched_resources.append(resource)
                     continue
             
