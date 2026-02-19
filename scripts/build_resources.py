@@ -23,8 +23,8 @@ for idx, row in df.iterrows():
     search_aliases_str = str(row.get("search_aliases", "") or "")
     share_link = str(row.get("share_link", "") or "")
 
-    keywords = [k.strip() for k in keywords_str.split(",") if k.strip()]
-    search_aliases = [alias.strip() for alias in search_aliases_str.split(",") if alias.strip()]
+    keywords = [k.strip() for k in keywords_str.split(",") if k.strip() and k.strip().lower() != 'nan']
+    search_aliases = [alias.strip() for alias in search_aliases_str.split(",") if alias.strip() and alias.strip().lower() != 'nan']
 
     # 生成二维码
     qr_path = os.path.join(qrcode_dir, f"{item_id}.png")
