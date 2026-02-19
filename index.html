@@ -212,11 +212,18 @@ async function performSearch(keyword) {
     // 3. 在本地数据中查找资源
     if (localData.length === 0) await loadData();
 
-    // 匹配逻辑：标题包含 或 关键词数组包含
-    const item = localData.find(d =>
-        d.title.toLowerCase().includes(keyword.toLowerCase()) ||
-        (d.keywords && d.keywords.some(k => k.toLowerCase().includes(keyword.toLowerCase())))
-    );
+    // 匹配逻辑：先检查 search_aliases，再检查 title 和 keywords
+    const item = localData.find(d => {
+        // 如果有 search_aliases，用别名匹配
+        if (d.search_aliases && d.search_aliases.length > 0) {
+            return d.search_aliases.some(alias => 
+                alias.toLowerCase().includes(keyword.toLowerCase())
+            );
+        }
+        // 没有别名时，用 title 或 keywords 匹配
+        return d.title.toLowerCase().includes(keyword.toLowerCase()) ||
+            (d.keywords && d.keywords.some(k => k.toLowerCase().includes(keyword.toLowerCase())));
+    });
 
     const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
     let html = '';
