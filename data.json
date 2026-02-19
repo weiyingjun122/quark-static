@@ -2700,5 +2700,23 @@
     ],
     "share_link": "https://pan.quark.cn/s/359281711734",
     "qrcode": "static/qrcode/287.png"
+  },
+  {
+    "id": "288",
+    "title": "人皮灯笼",
+    "keywords": [
+      "剧本杀"
+    ],
+    "share_link": "https://pan.quark.cn/s/936af0ed13b7",
+    "qrcode": "static/qrcode/288.png"
+  },
+  {
+    "id": "289",
+    "title": "科举",
+    "keywords": [
+      "剧本杀"
+    ],
+    "share_link": "https://pan.quark.cn/s/d5c015c8daba",
+    "qrcode": "static/qrcode/289.png"
   }
 ]
