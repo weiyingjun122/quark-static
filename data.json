@@ -2783,7 +2783,10 @@
     "keywords": [
       "剧本杀"
     ],
-    "search_aliases": [],
+    "search_aliases": [
+      "嫌疑人x没有现身",
+      "嫌疑人x没有献身"
+    ],
     "share_link": "https://pan.quark.cn/s/bc237772d620",
     "qrcode": "static/qrcode/266.png"
   },
@@ -3023,7 +3026,10 @@
     "keywords": [
       "剧本杀"
     ],
-    "search_aliases": [],
+    "search_aliases": [
+      "嫌疑人x没有现身2",
+      "嫌疑人x没有献身2"
+    ],
     "share_link": "https://pan.quark.cn/s/931d63f66899",
     "qrcode": "static/qrcode/290.png"
   },
