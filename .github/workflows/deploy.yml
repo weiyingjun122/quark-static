@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - 'resources.xlsx'
+      - 'update.xlsx'
       - 'scripts/**'
       - 'index.html'
       - 'worker-test.html'  # 添加这行
@@ -67,6 +68,13 @@ jobs:
           python build_resources.py
           cd ..
 
+      # 6️⃣ 构建已更新资源 update.json
+      - name: Build Update List
+        run: |
+          cd scripts
+          python build_update.py
+          cd ..
+
       # 6️⃣ 生成 SEO stats.json
       - name: Generate SEO Pages
         run: |
@@ -125,6 +133,7 @@ jobs:
 
             # 只添加实际存在的文件
             git add data.json 2>/dev/null || true
+            git add update.json 2>/dev/null || true
             git add static/status.json 2>/dev/null || true
             git add static/qrcode/* 2>/dev/null || true
             git add search/ 2>/dev/null || true

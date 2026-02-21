@@ -83,6 +83,14 @@ body { font-family: "Microsoft YaHei", Arial, sans-serif; background: #f5f5f5; d
     <button id="searchBtn">搜索</button>
 </div>
 
+<!-- 已更新资源 -->
+<div id="updated-resources" style="width:100%; max-width:480px; margin-bottom:20px;">
+    <div class="recommend-card">
+        <h3>🆕 已更新资源</h3>
+        <div id="updatedList" style="font-size:14px; color:#666; line-height:1.8;"></div>
+    </div>
+</div>
+
 <!-- 首页推荐热搜 -->
 <div id="recommend">
     <!-- 默认加载态，JS加载完成后会覆盖这里 -->
@@ -324,6 +332,22 @@ async function diagnose400Error(keyword, apiPath, response, data) {
     }
 }
 
+// 加载已更新资源
+async function loadUpdatedResources() {
+    try {
+        const res = await fetch(`update.json?t=${Date.now()}`);
+        const data = await res.json();
+        
+        if (!data || data.length === 0) return;
+        
+        const html = data.map(item => `<div>• ${item.name} <span style="color:#999;font-size:12px;">(${item.date})</span></div>`).join('');
+        
+        document.getElementById('updatedList').innerHTML = html;
+    } catch (e) {
+        console.warn('已更新资源加载失败:', e);
+    }
+}
+
 // 热搜关键词过滤配置
 const FILTER_KEYWORDS = [
     // 在这里添加需要过滤的关键词
@@ -433,8 +457,9 @@ searchInput.addEventListener('keypress', e => { if(e.key==='Enter') searchBtn.cl
 window.addEventListener('DOMContentLoaded', () => {
     loadData();        // 1. 预加载资源数据
     loadHotKeywords(); // 2. 加载热搜榜
+    loadUpdatedResources(); // 3. 加载已更新资源
 
-    // 3. 检查 URL 是否带参数 (例如 ?q=剧本杀)
+    // 4. 检查 URL 是否带参数 (例如 ?q=剧本杀)
     const params = new URLSearchParams(location.search);
     const q = params.get('q');
     if(q){
