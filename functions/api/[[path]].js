@@ -626,15 +626,16 @@ async function handleRequest(request, env, corsHeaders) {
         });
     }
 
-    // 手动生成时间字符串（避免乱码）
+    // 手动生成时间字符串（避免乱码）- 转换为北京时间 UTC+8
     const now = new Date();
+    const beijingTime = new Date(now.getTime() + 8 * 60 * 60 * 1000);
     const timeStr =
-    now.getFullYear() + "-" +
-    String(now.getMonth() + 1).padStart(2, '0') + "-" +
-    String(now.getDate()).padStart(2, '0') + " " +
-    String(now.getHours()).padStart(2, '0') + ":" +
-    String(now.getMinutes()).padStart(2, '0') + ":" +
-    String(now.getSeconds()).padStart(2, '0');
+        beijingTime.getUTCFullYear() + "-" +
+        String(beijingTime.getUTCMonth() + 1).padStart(2, '0') + "-" +
+        String(beijingTime.getUTCDate()).padStart(2, '0') + " " +
+        String(beijingTime.getUTCHours()).padStart(2, '0') + ":" +
+        String(beijingTime.getUTCMinutes()).padStart(2, '0') + ":" +
+        String(beijingTime.getUTCSeconds()).padStart(2, '0');
 
     const content =
     "新资源需求通知\n\n" +
