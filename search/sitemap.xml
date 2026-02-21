@@ -196,6 +196,11 @@
         <priority>0.7</priority>
     </url>
     <url>
+        <loc>https://www.weiyingjun.top/search/我亲爱的侦探小姐.html</loc>
+        <changefreq>weekly</changefreq>
+        <priority>0.7</priority>
+    </url>
+    <url>
         <loc>https://www.weiyingjun.top/search/雪乡.html</loc>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
@@ -242,11 +247,6 @@
     </url>
     <url>
         <loc>https://www.weiyingjun.top/search/娘娘千岁.html</loc>
-        <changefreq>weekly</changefreq>
-        <priority>0.7</priority>
-    </url>
-    <url>
-        <loc>https://www.weiyingjun.top/search/我亲爱的侦探小姐.html</loc>
         <changefreq>weekly</changefreq>
         <priority>0.7</priority>
     </url>
