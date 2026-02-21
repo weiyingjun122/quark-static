@@ -49,6 +49,8 @@ export async function onRequest(context) {
             return await handleHealth(corsHeaders);
         case 'ping':
             return await handlePing(corsHeaders);
+        case 'request':
+            return await handleRequest(request, env, corsHeaders);
         default:
             return new Response(JSON.stringify({
                 error: "Endpoint not found",
@@ -494,6 +496,95 @@ async function handlePing(corsHeaders) {
     }), {
         headers: { "Content-Type": "application/json", ...corsHeaders }
     });
+}
+
+// ============================================================
+// 处理资源登记 /api/request
+// ============================================================
+async function handleRequest(request, env, corsHeaders) {
+    if (request.method !== "POST") {
+        return new Response(JSON.stringify({
+            success: false,
+            error: "Method not allowed"
+        }), {
+            status: 405,
+            headers: { "Content-Type": "application/json; charset=utf-8", ...corsHeaders }
+        });
+    }
+
+    let keyword = "";
+
+    try {
+        const body = await request.json();
+        keyword = (body.keyword || "").trim();
+    } catch (e) {
+        return new Response(JSON.stringify({
+            success: false,
+            error: "Invalid JSON"
+        }), {
+            status: 400,
+            headers: { "Content-Type": "application/json; charset=utf-8", ...corsHeaders }
+        });
+    }
+
+    if (!keyword) {
+        return new Response(JSON.stringify({
+            success: false,
+            error: "关键词不能为空"
+        }), {
+            status: 400,
+            headers: { "Content-Type": "application/json; charset=utf-8", ...corsHeaders }
+        });
+    }
+
+    if (!env.WECHAT_WEBHOOK) {
+        return new Response(JSON.stringify({
+            success: false,
+            error: "未配置 WECHAT_WEBHOOK 环境变量"
+        }), {
+            status: 500,
+            headers: { "Content-Type": "application/json; charset=utf-8", ...corsHeaders }
+        });
+    }
+
+    // 构造发送内容
+    const content = `📥 新资源需求通知
+
+    关键词：${keyword}
+    时间：${new Date().toLocaleString("zh-CN")}
+    来源：网站资源登记接口`;
+
+    try {
+        await fetch(env.WECHAT_WEBHOOK, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                msgtype: "text",
+                text: {
+                    content: content
+                }
+            })
+        });
+
+        return new Response(JSON.stringify({
+            success: true,
+            message: "已成功提交，我们会尽快更新资源"
+        }), {
+            headers: { "Content-Type": "application/json; charset=utf-8", ...corsHeaders }
+        });
+
+    } catch (err) {
+        return new Response(JSON.stringify({
+            success: false,
+            error: "发送企业微信失败",
+            detail: err.message
+        }), {
+            status: 500,
+            headers: { "Content-Type": "application/json; charset=utf-8", ...corsHeaders }
+        });
+    }
 }
 
 
