@@ -247,11 +247,42 @@ async function performSearch(keyword) {
         html = `<h3>⚠️ 暂未收录该资源</h3>
                 <p>关键词：<strong>${keyword}</strong></p>
                 <p>请尝试精简关键词，或扫码加入资源群求资源</p>
+                <button id="requestBtn" class="btn" style="background:#ff6b35;">📮 求资源</button>
                 <img src="static/wechat_qrcode.png" style="width:350px;height:350px;">`;
     }
 
     modalBody.innerHTML = html;
     modal.style.display = 'flex';
+
+    // 未找到资源时绑定求资源按钮事件
+    if (!item) {
+        document.getElementById('requestBtn').addEventListener('click', async function() {
+            const btn = this;
+            btn.disabled = true;
+            btn.textContent = '提交中...';
+            
+            try {
+                const res = await fetch('/api/request', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ keyword: keyword })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                    modal.style.display = 'none';
+                } else {
+                    alert('❌ ' + (data.error || '提交失败'));
+                }
+            } catch (e) {
+                alert('❌ 网络错误：' + e.message);
+            }
+            
+            btn.disabled = false;
+            btn.textContent = '📮 求资源';
+        });
+    }
 }
 
 // 诊断400错误的函数
