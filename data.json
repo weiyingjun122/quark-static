@@ -2103,7 +2103,10 @@
     "keywords": [
       "剧本杀"
     ],
-    "search_aliases": [],
+    "search_aliases": [
+      "雪乡连环杀人事件",
+      "雪乡杀人事件"
+    ],
     "share_link": "https://pan.quark.cn/s/cd96eb3e7191",
     "qrcode": "static/qrcode/199.png"
   },
@@ -3245,5 +3248,15 @@
     "search_aliases": [],
     "share_link": "https://pan.quark.cn/s/05fb2cc9db0a",
     "qrcode": "static/qrcode/311.png"
+  },
+  {
+    "id": "312",
+    "title": "屋魂",
+    "keywords": [
+      "剧本杀"
+    ],
+    "search_aliases": [],
+    "share_link": "https://pan.quark.cn/s/7be3029319dc",
+    "qrcode": "static/qrcode/312.png"
   }
 ]
