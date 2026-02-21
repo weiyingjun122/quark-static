@@ -258,6 +258,8 @@ async function performSearch(keyword) {
     if (!item) {
         document.getElementById('requestBtn').addEventListener('click', async function() {
             const btn = this;
+            if (btn.disabled) return;
+            
             btn.disabled = true;
             btn.textContent = '提交中...';
             

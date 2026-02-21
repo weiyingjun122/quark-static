@@ -500,7 +500,62 @@ async function handlePing(corsHeaders) {
 
 /* ============================================================
  *  资源登记接口 /api/request
- = *=========================================================== */
+ *  防刷机制：IP频率限制 + 关键词限制
+  = *=========================================================== */
+
+const RATE_LIMIT = {
+    MAX_REQUESTS: 3,
+    WINDOW_MS: 60 * 60 * 1000
+};
+
+function getClientIP(request) {
+    return request.headers.get('CF-Connecting-IP') || 
+           request.headers.get('X-Forwarded-For') || 
+           'unknown';
+}
+
+async function checkRateLimit(env, clientIP, corsHeaders) {
+    const key = `ratelimit:${clientIP}`;
+    const now = Date.now();
+    
+    let record = await env.SEARCH_STATS.get(key);
+    if (record) {
+        const { count, windowStart } = JSON.parse(record);
+        
+        if (now - windowStart > RATE_LIMIT.WINDOW_MS) {
+            await env.SEARCH_STATS.put(key, JSON.stringify({ count: 1, windowStart: now }));
+            return { allowed: true };
+        }
+        
+        if (count >= RATE_LIMIT.MAX_REQUESTS) {
+            return { allowed: false, remainingTime: Math.ceil((windowStart + RATE_LIMIT.WINDOW_MS - now) / 1000 / 60) };
+        }
+        
+        await env.SEARCH_STATS.put(key, JSON.stringify({ count: count + 1, windowStart }));
+        return { allowed: true };
+    }
+    
+    await env.SEARCH_STATS.put(key, JSON.stringify({ count: 1, windowStart: now }));
+    return { allowed: true };
+}
+
+async function checkKeywordLimit(env, keyword, corsHeaders) {
+    const key = `keyword_req:${keyword.toLowerCase()}`;
+    const now = Date.now();
+    const DAY_MS = 24 * 60 * 60 * 1000;
+    
+    const record = await env.SEARCH_STATS.get(key);
+    if (record) {
+        const { lastRequest } = JSON.parse(record);
+        if (now - lastRequest < DAY_MS) {
+            return { allowed: false };
+        }
+    }
+    
+    await env.SEARCH_STATS.put(key, JSON.stringify({ lastRequest: now }));
+    return { allowed: true };
+}
+
 async function handleRequest(request, env, corsHeaders) {
 
     if (request.method !== "POST") {
@@ -534,6 +589,29 @@ async function handleRequest(request, env, corsHeaders) {
             error: "关键词不能为空"
         }), {
             status: 400,
+            headers: { "Content-Type": "application/json; charset=utf-8", ...corsHeaders }
+        });
+    }
+
+    const clientIP = getClientIP(request);
+    const rateLimitResult = await checkRateLimit(env, clientIP, corsHeaders);
+    if (!rateLimitResult.allowed) {
+        return new Response(JSON.stringify({
+            success: false,
+            error: `请求过于频繁，请${rateLimitResult.remainingTime}分钟后再试`
+        }), {
+            status: 429,
+            headers: { "Content-Type": "application/json; charset=utf-8", ...corsHeaders }
+        });
+    }
+
+    const keywordLimitResult = await checkKeywordLimit(env, keyword, corsHeaders);
+    if (!keywordLimitResult.allowed) {
+        return new Response(JSON.stringify({
+            success: false,
+            error: "该关键词今天已提交过，请明天再试"
+        }), {
+            status: 429,
             headers: { "Content-Type": "application/json; charset=utf-8", ...corsHeaders }
         });
     }
