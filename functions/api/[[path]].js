@@ -498,10 +498,11 @@ async function handlePing(corsHeaders) {
     });
 }
 
-// ============================================================
-// 处理资源登记 /api/request
-// ============================================================
+/* ============================================================
+ *  资源登记接口 /api/request
+ = *=========================================================== */
 async function handleRequest(request, env, corsHeaders) {
+
     if (request.method !== "POST") {
         return new Response(JSON.stringify({
             success: false,
@@ -547,18 +548,27 @@ async function handleRequest(request, env, corsHeaders) {
         });
     }
 
-    // 构造发送内容
-    const content = `📥 新资源需求通知
+    // 手动生成时间字符串（避免乱码）
+    const now = new Date();
+    const timeStr =
+    now.getFullYear() + "-" +
+    String(now.getMonth() + 1).padStart(2, '0') + "-" +
+    String(now.getDate()).padStart(2, '0') + " " +
+    String(now.getHours()).padStart(2, '0') + ":" +
+    String(now.getMinutes()).padStart(2, '0') + ":" +
+    String(now.getSeconds()).padStart(2, '0');
 
-    关键词：${keyword}
-    时间：${new Date().toLocaleString("zh-CN")}
-    来源：网站资源登记接口`;
+    const content =
+    "新资源需求通知\n\n" +
+    "关键词：" + keyword + "\n" +
+    "时间：" + timeStr + "\n" +
+    "来源：网站资源登记接口";
 
     try {
-        await fetch(env.WECHAT_WEBHOOK, {
+        await fetch(env.WECHAT_WEBHOOK.trim(), {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json; charset=utf-8"
             },
             body: JSON.stringify({
                 msgtype: "text",
