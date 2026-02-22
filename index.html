@@ -340,7 +340,10 @@ async function loadUpdatedResources() {
         
         if (!data || data.length === 0) return;
         
-        const html = data.map(item => `<div>• ${item.name} <span style="color:#999;font-size:12px;">(${item.date})</span></div>`).join('');
+        const html = data.map(item => {
+            const safeName = item.name.replace(/'/g, "\\'");
+            return `<div>• <a href="javascript:void(0)" onclick="document.getElementById('searchInput').value='${safeName}'; document.getElementById('searchBtn').click();" style="color:#007bff;text-decoration:none;">${item.name}</a> <span style="color:#999;font-size:12px;">(${item.date})</span></div>`;
+        }).join('');
         
         document.getElementById('updatedList').innerHTML = html;
     } catch (e) {
