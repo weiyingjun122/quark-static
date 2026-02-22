@@ -593,6 +593,26 @@ async function handleRequest(request, env, corsHeaders) {
         });
     }
 
+    const blockedDomains = [
+        'weiyingjun.top',
+        'www.weiyingjun.top',
+        'https://www.weiyingjun.top',
+        'https://weiyingjun.top'
+    ];
+    const normalizedKeyword = keyword.toLowerCase().replace(/\s+/g, '').replace(/[\.\s]/g, '');
+    const isBlocked = blockedDomains.some(domain => 
+        normalizedKeyword.includes(domain.toLowerCase().replace(/\s+/g, '').replace(/[\.\s]/g, ''))
+    );
+    if (isBlocked) {
+        return new Response(JSON.stringify({
+            success: false,
+            error: "该关键词已被过滤"
+        }), {
+            status: 400,
+            headers: { "Content-Type": "application/json; charset=utf-8", ...corsHeaders }
+        });
+    }
+
     const clientIP = getClientIP(request);
     const rateLimitResult = await checkRateLimit(env, clientIP, corsHeaders);
     if (!rateLimitResult.allowed) {
