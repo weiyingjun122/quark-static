@@ -187,6 +187,24 @@ async function performSearch(keyword) {
     console.log('✅ 参数验证通过');
     console.groupEnd();
 
+    // 过滤主站域名
+    const BLOCK_DOMAINS = [
+        'weiyingjun.top',
+        'www.weiyingjun.top',
+        'https://www.weiyingjun.top',
+        'https://weiyingjun.top'
+    ];
+
+    const normalizedKeyword = keyword.toLowerCase().replace(/\s/g, '');
+    const isBlocked = BLOCK_DOMAINS.some(domain => 
+        normalizedKeyword.includes(domain.toLowerCase().replace(/\s/g, ''))
+    );
+
+    if (isBlocked) {
+        alert('暂不支持搜索主站域名');
+        return;
+    }
+
     // === 继续执行正常逻辑 ===
     // 1. 修改 URL
     const newUrl = `?q=${encodeURIComponent(keyword)}`;

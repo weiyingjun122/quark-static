@@ -365,6 +365,19 @@ async function handleGap(env, corsHeaders) {
 
             const keyword = word.trim();
 
+            // 过滤主站域名
+            const BLOCK_DOMAINS = [
+                'weiyingjun.top',
+                'www.weiyingjun.top',
+                'https://www.weiyingjun.top',
+                'https://weiyingjun.top'
+            ];
+            const normalizedKeyword = keyword.toLowerCase().replace(/\s/g, '');
+            const isBlocked = BLOCK_DOMAINS.some(domain => 
+                normalizedKeyword.includes(domain.toLowerCase().replace(/\s/g, ''))
+            );
+            if (isBlocked) return;
+
             // 是否命中任何资源
             const matched = dataList.some(item => {
                 // 如果有 search_aliases，用别名匹配（双向匹配）
