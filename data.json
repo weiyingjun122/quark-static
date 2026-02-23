@@ -2105,7 +2105,8 @@
     ],
     "search_aliases": [
       "雪乡连环杀人事件",
-      "雪乡杀人事件"
+      "雪乡杀人事件",
+      "雪乡连环杀人案"
     ],
     "share_link": "https://pan.quark.cn/s/cd96eb3e7191",
     "qrcode": "static/qrcode/199.png"
@@ -2439,7 +2440,10 @@
     "keywords": [
       "剧本杀"
     ],
-    "search_aliases": [],
+    "search_aliases": [
+      "望雀",
+      "忘雀"
+    ],
     "share_link": "https://pan.quark.cn/s/1d663430e5d8",
     "qrcode": "static/qrcode/232.png"
   },
@@ -2839,7 +2843,10 @@
     "keywords": [
       "剧本杀"
     ],
-    "search_aliases": [],
+    "search_aliases": [
+      "仁馨精神病院",
+      "仁馨精神医院"
+    ],
     "share_link": "https://pan.quark.cn/s/7238bd7db544",
     "qrcode": "static/qrcode/271.png"
   },
@@ -4674,5 +4681,95 @@
     "search_aliases": [],
     "share_link": "https://pan.quark.cn/s/0c78700a9b55",
     "qrcode": "static/qrcode/450.png"
+  },
+  {
+    "id": "451",
+    "title": "三生三世枕上书",
+    "keywords": [
+      "剧集",
+      "国剧",
+      "电视剧",
+      "那些回不去的年少时光",
+      "三生三世枕上书"
+    ],
+    "search_aliases": [
+      "三生三世枕上书",
+      "枕上书"
+    ],
+    "share_link": "https://pan.quark.cn/s/fb10f2c52bb1",
+    "qrcode": "static/qrcode/451.png"
+  },
+  {
+    "id": "452",
+    "title": "季风吹过橘色的海",
+    "keywords": [
+      "剧本杀"
+    ],
+    "search_aliases": [],
+    "share_link": "https://pan.quark.cn/s/1344ec35ccd0",
+    "qrcode": "static/qrcode/452.png"
+  },
+  {
+    "id": "453",
+    "title": "雪乡连环杀人事件2",
+    "keywords": [],
+    "search_aliases": [
+      "雪乡连环杀人事件2",
+      "雪乡杀人事件2",
+      "雪乡连环杀人案2"
+    ],
+    "share_link": "https://pan.quark.cn/s/5d694cff834e",
+    "qrcode": "static/qrcode/453.png"
+  },
+  {
+    "id": "454",
+    "title": "豆大点事物语",
+    "keywords": [
+      "剧本杀"
+    ],
+    "search_aliases": [],
+    "share_link": "https://pan.quark.cn/s/d3b05e00c02e",
+    "qrcode": "static/qrcode/454.png"
+  },
+  {
+    "id": "455",
+    "title": "盒子先生的秘密商店",
+    "keywords": [
+      "剧本杀"
+    ],
+    "search_aliases": [],
+    "share_link": "https://pan.quark.cn/s/7ffada50549b",
+    "qrcode": "static/qrcode/455.png"
+  },
+  {
+    "id": "456",
+    "title": "豺狼的日子",
+    "keywords": [
+      "剧集",
+      "豺狼的日子"
+    ],
+    "search_aliases": [],
+    "share_link": "https://pan.quark.cn/s/8f1dba4c0f68",
+    "qrcode": "static/qrcode/456.png"
+  },
+  {
+    "id": "457",
+    "title": "孤城",
+    "keywords": [
+      "剧本杀"
+    ],
+    "search_aliases": [],
+    "share_link": "https://pan.quark.cn/s/e7e289b429d1",
+    "qrcode": "static/qrcode/457.png"
+  },
+  {
+    "id": "458",
+    "title": "刀鞘",
+    "keywords": [
+      "剧本杀"
+    ],
+    "search_aliases": [],
+    "share_link": "https://pan.quark.cn/s/c00a82990679",
+    "qrcode": "static/qrcode/458.png"
   }
 ]
