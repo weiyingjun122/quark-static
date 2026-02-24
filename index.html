@@ -44,6 +44,15 @@ body { font-family: "Microsoft YaHei", Arial, sans-serif; background: #f5f5f5; d
     .search-container button { flex: 1 1 100%; border-radius: 5px; }
 }
 
+/* Tab切换 */
+.tabs { width: 100%; max-width: 480px; margin-bottom: 20px; }
+.tab-buttons { display: flex; gap: 10px; margin-bottom: 0; }
+.tab-btn { flex: 1; padding: 12px; background: #fff; border: none; border-radius: 12px 12px 0 0; cursor: pointer; font-size: 14px; color: #666; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+.tab-btn.active { background: #1e90ff; color: #fff; font-weight: bold; }
+.tab-btn:hover:not(.active) { background: #f0f0f0; }
+.tab-content { display: none; background: #fff; padding: 20px; border-radius: 0 12px 12px 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+.tab-content.active { display: block; }
+
 /* 免责声明 */
 .site-disclaimer {
     margin: 30px auto;
@@ -83,19 +92,26 @@ body { font-family: "Microsoft YaHei", Arial, sans-serif; background: #f5f5f5; d
     <button id="searchBtn">搜索</button>
 </div>
 
-<!-- 已更新资源 -->
-<div id="updated-resources" style="width:100%; max-width:480px; margin-bottom:20px;">
-    <div class="recommend-card">
-        <h3>🆕 已更新资源</h3>
+<!-- Tab切换 -->
+<div class="tabs">
+    <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchTab('updated')">🆕 已更新资源</button>
+        <button class="tab-btn" onclick="switchTab('hot')">🔥 全网实时热搜</button>
+    </div>
+    
+    <!-- 已更新资源 -->
+    <div id="tab-updated" class="tab-content active">
+        <h3 style="margin-top:0; margin-bottom:15px; font-size:16px; color:#666; border-bottom:1px solid #eee; padding-bottom:10px;">🆕 已更新资源</h3>
         <div id="updatedList" style="font-size:14px; color:#666; line-height:1.8;"></div>
     </div>
-</div>
-
-<!-- 首页推荐热搜 -->
-<div id="recommend">
-    <!-- 默认加载态，JS加载完成后会覆盖这里 -->
-    <div class="recommend-card">
-        <h3>🔥 正在加载实时热搜...</h3>
+    
+    <!-- 全网实时热搜 -->
+    <div id="tab-hot" class="tab-content">
+        <div id="recommend">
+            <div class="recommend-card">
+                <h3>🔥 正在加载实时热搜...</h3>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -118,6 +134,15 @@ const modal = document.getElementById('modal');
 const modalBody = document.getElementById('modalBody');
 const searchBtn = document.getElementById('searchBtn');
 const searchInput = document.getElementById('searchInput');
+
+// Tab切换函数
+function switchTab(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    
+    document.querySelector(`.tab-btn[onclick="switchTab('${tabName}')"]`).classList.add('active');
+    document.getElementById(`tab-${tabName}`).classList.add('active');
+}
 
 // 关闭弹窗逻辑
 modal.addEventListener('click', e => { if(e.target === modal) modal.style.display='none' });
@@ -378,7 +403,7 @@ const FILTER_KEYWORDS = [
 
 // 加载全网热搜榜 (从 Pages API 获取)
 async function loadHotKeywords(retryCount = 0) {
-    const container = document.getElementById('recommend');
+    const container = document.querySelector('#tab-hot #recommend');
     const maxRetries = 3;
 
     try {
