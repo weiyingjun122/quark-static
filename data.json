@@ -1083,7 +1083,10 @@
     "keywords": [
       "剧本杀"
     ],
-    "search_aliases": [],
+    "search_aliases": [
+      "相府鱼美人1",
+      "相府美人鱼1"
+    ],
     "share_link": "https://pan.quark.cn/s/d47624bd9832",
     "qrcode": "static/qrcode/97.png"
   },
@@ -1093,7 +1096,10 @@
     "keywords": [
       "剧本杀"
     ],
-    "search_aliases": [],
+    "search_aliases": [
+      "相府鱼美人2",
+      "相府美人鱼2"
+    ],
     "share_link": "https://pan.quark.cn/s/4e04a07074cd",
     "qrcode": "static/qrcode/98.png"
   },
@@ -4821,5 +4827,55 @@
     "search_aliases": [],
     "share_link": "https://pan.quark.cn/s/dd840fcb4e06",
     "qrcode": "static/qrcode/463.png"
+  },
+  {
+    "id": "464",
+    "title": "长安秘案录",
+    "keywords": [
+      "小说"
+    ],
+    "search_aliases": [],
+    "share_link": "https://pan.quark.cn/s/ec0a3f96df64",
+    "qrcode": "static/qrcode/464.png"
+  },
+  {
+    "id": "465",
+    "title": "亡瘾",
+    "keywords": [
+      "小说"
+    ],
+    "search_aliases": [],
+    "share_link": "https://pan.quark.cn/s/c006323e4119",
+    "qrcode": "static/qrcode/465.png"
+  },
+  {
+    "id": "466",
+    "title": "我与我诀别",
+    "keywords": [
+      "剧本杀"
+    ],
+    "search_aliases": [],
+    "share_link": "https://pan.quark.cn/s/d0bd4ce4f9fe",
+    "qrcode": "static/qrcode/466.png"
+  },
+  {
+    "id": "467",
+    "title": "红豆",
+    "keywords": [
+      "剧本杀"
+    ],
+    "search_aliases": [],
+    "share_link": "https://pan.quark.cn/s/e7e922931dc7",
+    "qrcode": "static/qrcode/467.png"
+  },
+  {
+    "id": "468",
+    "title": "大宴之上",
+    "keywords": [
+      "剧本杀"
+    ],
+    "search_aliases": [],
+    "share_link": "https://pan.quark.cn/s/931d2b0fe589",
+    "qrcode": "static/qrcode/468.png"
   }
 ]
