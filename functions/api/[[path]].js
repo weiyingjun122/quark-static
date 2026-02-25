@@ -370,7 +370,9 @@ async function handleGap(env, corsHeaders) {
                 'weiyingjun.top',
                 'www.weiyingjun.top',
                 'https://www.weiyingjun.top',
-                'https://weiyingjun.top'
+                'https://weiyingjun.top',
+                '三人','三人本',
+                '四人','四人本'
             ];
             const normalizedKeyword = keyword.toLowerCase().replace(/\s/g, '');
             const isBlocked = BLOCK_DOMAINS.some(domain => 
