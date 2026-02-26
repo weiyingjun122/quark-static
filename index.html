@@ -53,6 +53,11 @@ body { font-family: "Microsoft YaHei", Arial, sans-serif; background: #f5f5f5; d
 .tab-content { display: none; background: #fff; padding: 20px; border-radius: 0 12px 12px 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
 .tab-content.active { display: block; }
 
+/* 类型筛选 */
+.type-filter-btn { display: inline-block; padding: 4px 12px; margin-right: 8px; margin-bottom: 8px; background: #f0f0f0; border-radius: 15px; font-size: 12px; color: #666; cursor: pointer; transition: all 0.2s; }
+.type-filter-btn:hover { background: #e0e0e0; }
+.type-filter-btn.active { background: #1e90ff; color: #fff; }
+
 /* 免责声明 */
 .site-disclaimer {
     margin: 30px auto;
@@ -102,6 +107,7 @@ body { font-family: "Microsoft YaHei", Arial, sans-serif; background: #f5f5f5; d
     <!-- 已更新资源 -->
     <div id="tab-updated" class="tab-content active">
         <h3 style="margin-top:0; margin-bottom:15px; font-size:16px; color:#666; border-bottom:1px solid #eee; padding-bottom:10px;">🆕 已更新资源</h3>
+        <div id="typeFilter" style="margin-bottom:15px;"></div>
         <div id="updatedList" style="font-size:14px; color:#666; line-height:1.8;"></div>
     </div>
     
@@ -376,6 +382,9 @@ async function diagnose400Error(keyword, apiPath, response, data) {
 }
 
 // 加载已更新资源
+let allUpdatedData = [];
+let currentTypeFilter = '全部';
+
 async function loadUpdatedResources() {
     try {
         const res = await fetch(`update.json?t=${Date.now()}`);
@@ -383,15 +392,49 @@ async function loadUpdatedResources() {
         
         if (!data || data.length === 0) return;
         
-        const html = data.map(item => {
-            const safeName = item.name.replace(/'/g, "\\'");
-            return `<div>• <a href="javascript:void(0)" onclick="document.getElementById('searchInput').value='${safeName}'; document.getElementById('searchBtn').click();" style="color:#007bff;text-decoration:none;">${item.name}</a> <span style="color:#999;font-size:12px;">(${item.date})</span></div>`;
-        }).join('');
+        allUpdatedData = data;
         
-        document.getElementById('updatedList').innerHTML = html;
+        // 获取所有类型
+        const types = ['全部', ...new Set(data.map(item => item.type || '其他'))];
+        
+        // 渲染类型筛选
+        let filterHtml = '';
+        types.forEach(type => {
+            const active = type === '全部' ? 'active' : '';
+            filterHtml += `<span class="type-filter-btn ${active}" onclick="filterByType('${type}')">${type}</span>`;
+        });
+        document.getElementById('typeFilter').innerHTML = filterHtml;
+        
+        renderUpdatedList(data);
     } catch (e) {
         console.warn('已更新资源加载失败:', e);
     }
+}
+
+function filterByType(type) {
+    currentTypeFilter = type;
+    
+    // 更新按钮状态
+    document.querySelectorAll('.type-filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.textContent === type) btn.classList.add('active');
+    });
+    
+    // 筛选并渲染
+    const filtered = type === '全部' 
+        ? allUpdatedData 
+        : allUpdatedData.filter(item => (item.type || '其他') === type);
+    renderUpdatedList(filtered);
+}
+
+function renderUpdatedList(data) {
+    const html = data.map(item => {
+        const safeName = item.name.replace(/'/g, "\\'");
+        const typeTag = item.type ? `<span style="color:#e74c3c;font-size:12px;margin-left:5px;">[${item.type}]</span>` : '';
+        return `<div>• <a href="javascript:void(0)" onclick="document.getElementById('searchInput').value='${safeName}'; document.getElementById('searchBtn').click();" style="color:#007bff;text-decoration:none;">${item.name}</a>${typeTag} <span style="color:#999;font-size:12px;">(${item.date})</span></div>`;
+    }).join('');
+    
+    document.getElementById('updatedList').innerHTML = html;
 }
 
 // 热搜关键词过滤配置
