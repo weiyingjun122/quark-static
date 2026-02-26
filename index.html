@@ -428,7 +428,11 @@ function filterByType(type) {
 }
 
 function renderUpdatedList(data) {
-    const html = data.map(item => {
+    const sortedData = [...data].sort((a, b) => 
+        new Date(b.date) - new Date(a.date)
+    );
+    
+    const html = sortedData.map(item => {
         const safeName = item.name.replace(/'/g, "\\'");
         const typeTag = item.type ? `<span style="color:#e74c3c;font-size:12px;margin-left:5px;">[${item.type}]</span>` : '';
         return `<div>• <a href="javascript:void(0)" onclick="document.getElementById('searchInput').value='${safeName}'; document.getElementById('searchBtn').click();" style="color:#007bff;text-decoration:none;">${item.name}</a>${typeTag} <span style="color:#999;font-size:12px;">(${item.date})</span></div>`;
